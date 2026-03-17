@@ -1,22 +1,35 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { createClient } from "@supabase/supabase-js";
+import authRoutes from "./src/routes/authRoutes.js";
+import { setupSwagger } from "./src/config/swagger.js";
 
 dotenv.config();
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 const app = express();
-app.use(cors());
-app.use(express.json()); // Added to parse JSON bodies
+const PORT = process.env.PORT || 3000;
 
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+// Swagger
+setupSwagger(app);
+
+// Routes
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Backend de ShareIt funcionando con Supabase y Swagger! 🚀");
 });
 
-app.listen(3000, () => {
-  console.log("Server started on port 3000");
+app.use("/auth", authRoutes);
+
+// Error handling middleware (Good practice)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Algo salió mal!" });
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Documentación disponible en http://localhost:${PORT}/api-docs`);
 });
