@@ -1,12 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import dotenv from "dotenv";
 
-// Forzamos a Prisma a usar la URL de tu .env manualmente
-export const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-});
+dotenv.config();
+
+const connectionString =
+  process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL;
+
+// Runtime usa pooler; comandos de esquema usan DATABASE_URL desde prisma.config.ts
+const adapter = new PrismaPg({ connectionString });
+
+export const prisma = new PrismaClient({ adapter });
 
 export default prisma;

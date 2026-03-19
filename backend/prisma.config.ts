@@ -4,9 +4,13 @@
 
 /// <reference types="node" />
 
-import "dotenv/config";
+import dotenv from "dotenv";
 
 import { defineConfig } from "prisma/config";
+
+dotenv.config({ override: true });
+
+const schemaUrl = process.env["DIRECT_URL"] || process.env["DATABASE_URL"];
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -16,6 +20,6 @@ export default defineConfig({
   },
 
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: schemaUrl,
   },
 });
