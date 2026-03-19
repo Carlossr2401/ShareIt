@@ -6,11 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
 model Profile {
   id         String   @id @db.Uuid
   email      String   @unique // Para consultas rápidas desde el backend
@@ -18,8 +13,8 @@ model Profile {
   full_name  String?
   avatar_url String?
   bio        String?
-  role       Role     @default(USER) // Por defecto todos son USER
-  
+  wallet     Float    @default(0)
+
   updated_at DateTime @updatedAt
   created_at DateTime @default(now())
 
