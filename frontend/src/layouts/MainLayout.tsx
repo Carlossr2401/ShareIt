@@ -37,7 +37,7 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang, setLang, t } = useI18n();
-  const { role, setRole, userName } = useUser();
+  const { role, setRole, userName, avatarUrl } = useUser();
 
   const userMenuItems = [
     { text: t("nav.dashboard"), icon: <DashboardIcon />, path: "/" },
@@ -98,13 +98,14 @@ export default function MainLayout() {
         {/* User Profile + Role Switcher */}
         <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1.5 }}>
           <Avatar
+            src={avatarUrl}
             sx={{
               bgcolor: role === "admin" ? "secondary.main" : "primary.main",
               width: 40,
               height: 40,
             }}
           >
-            {userName.charAt(0)}
+            {userName ? userName.charAt(0) : "U"}
           </Avatar>
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body2" fontWeight={600}>

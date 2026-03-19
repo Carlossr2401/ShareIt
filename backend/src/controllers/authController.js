@@ -14,7 +14,8 @@ const isValidPassword = (password) => {
 
 export const signup = async (req, res, next) => {
   try {
-    const { email, password, name, username, avatar_url, bio } = req.body;
+    const { email, password, name, username, bio } = req.body;
+    let { avatar_url } = req.body;
 
     // Validación de campos obligatorios
     if (!email || !password || !username) {
@@ -32,6 +33,29 @@ export const signup = async (req, res, next) => {
         error:
           "La contraseña debe tener entre 6 y 12 caracteres y no contener espacios",
       });
+    }
+
+    if (name.length < 2 || name.length > 50) {
+      return res.status(400).json({
+        error: "El nombre debe tener entre 2 y 50 caracteres",
+      });
+    }
+
+    if (username.length < 2 || username.length > 50) {
+      return res.status(400).json({
+        error: "El nombre de usuario debe tener entre 2 y 50 caracteres",
+      });
+    }
+
+    if (bio && bio.length > 255) {
+      return res.status(400).json({
+        error: "La biografía debe tener menos de 255 caracteres",
+      });
+    }
+
+    if (!avatar_url) {
+      const avatarName = encodeURIComponent(name || username || '');
+      avatar_url = `https://ui-avatars.com/api/?name=${avatarName}&background=random`;
     }
 
     const { data, error } = await supabase.auth.signUp({
