@@ -93,11 +93,49 @@ export const login = async (req, res, next) => {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
 
+    const isProduction = process.env.NODE_ENV === "production";
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "strict",
+      maxAge: data.session.expires_in * 1000,
+    };
+
+    res.cookie("access_token", data.session.access_token, cookieOptions);
+    if (data.session.refresh_token) {
+      res.cookie("refresh_token", data.session.refresh_token, {
+        ...cookieOptions,
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
+      });
+    }
+
     res.status(200).json({
       message: "Inicio de sesión exitoso",
-      session: data.session,
       user: data.user,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logout = async (req, res, next) => {
+  try {
+    const isProduction = process.env.NODE_ENV === "production";
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "strict",
+    };
+
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out from Supabase", error);
+    }
+
+    res.clearCookie("access_token", cookieOptions);
+    res.clearCookie("refresh_token", cookieOptions);
+
+    res.status(200).json({ message: "Sesión cerrada con éxito" });
   } catch (error) {
     next(error);
   }

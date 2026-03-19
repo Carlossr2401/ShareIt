@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/authRoutes.js";
 import { setupSwagger } from "./src/config/swagger.js";
 import path from "path";
@@ -15,8 +16,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Cambiar según el puerto del frontend
+    credentials: true, // Permitir envío de cookies
+  }),
+);
 app.use(express.json());
+app.use(cookieParser());
 
 // Swagger
 setupSwagger(app);

@@ -1,5 +1,6 @@
 import express from "express";
-import { signup, login } from "../controllers/authController.js";
+import { signup, login, logout } from "../controllers/authController.js";
+import { requireAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -66,5 +67,33 @@ router.post("/signup", signup);
  *         description: Credenciales inválidas
  */
 router.post("/login", login);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Cerrar sesión
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada con éxito
+ */
+router.post("/logout", logout);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Obtener perfil del usuario autenticado
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Perfil del usuario
+ *       401:
+ *         description: No autorizado
+ */
+router.get("/me", requireAuth, (req, res) => {
+  res.status(200).json({ user: req.user });
+});
 
 export default router;

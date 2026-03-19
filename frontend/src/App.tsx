@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -10,6 +10,18 @@ import Wallet from "./pages/Wallet";
 import AdminResources from "./pages/AdminResources";
 import AdminReservations from "./pages/AdminReservations";
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  // Comprueba si hay una bandera de sesión en localStorage.
+  // Podrías en el futuro verificar /auth/me en vez de esto.
+  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -18,7 +30,13 @@ export default function App() {
       <Route path="/register" element={<Register />} />
 
       {/* Main app (with sidebar layout) */}
-      <Route element={<MainLayout />}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/" element={<Dashboard />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/resources/:id" element={<ResourceDetail />} />
