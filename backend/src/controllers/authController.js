@@ -56,6 +56,7 @@ export const signup = async (req, res, next) => {
       await prisma.profile.create({
         data: {
           id: data.user.id, // Enlazamos con el ID de Supabase Auth
+          email: email,
           username: username,
           full_name: name || null,
           avatar_url: avatar_url || null,
