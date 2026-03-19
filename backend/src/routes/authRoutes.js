@@ -23,6 +23,14 @@ const router = express.Router();
  *                 type: string
  *               password:
  *                 type: string
+ *               name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               avatar_url:
+ *                 type: string
+ *               bio:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Usuario registrado con éxito
