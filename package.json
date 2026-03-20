@@ -1,0 +1,12 @@
+{
+  "engines": {
+    "node": ">=24.14.0 <25"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.5.0"
+  },
+  "devDependencies": {
+    "dotenv": "^17.3.1",
+    "prisma": "^7.5.0"
+  }
+}
