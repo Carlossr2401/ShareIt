@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/authRoutes.js";
+import productRoutes from "./src/routes/productRoutes.js";
 import { setupSwagger } from "./src/config/swagger.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRoutes);
+app.use("/products", productRoutes);
 
 // Error handling middleware (Good practice)
 app.use((err, req, res, next) => {
