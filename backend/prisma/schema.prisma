@@ -20,3 +20,20 @@ model Profile {
 
   @@map("profiles")
 }
+
+model Product {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  description     String?
+  category        String?
+  photo_url       String?
+  virtual_deposit Float?
+  rules           String[]
+  stock           Int      @default(0)
+  is_archived     Boolean  @default(false)
+  
+  updated_at      DateTime @updatedAt
+  created_at      DateTime @default(now())
+
+  @@map("products")
+}
