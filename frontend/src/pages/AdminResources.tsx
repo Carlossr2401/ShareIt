@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { Add, Edit, Delete, MeetingRoom, Laptop, Tv, DirectionsCar, Brush } from "@mui/icons-material";
 import { useI18n } from "../context/I18nContext";
+import { useUser } from "../context/UserContext";
 
 const typeIcons: Record<string, React.ReactNode> = {
   Room: <MeetingRoom fontSize="small" />, Laptop: <Laptop fontSize="small" />,
@@ -22,13 +23,15 @@ export default function AdminResources() {
   const [resources, setResources] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { t } = useI18n();
+  const { role } = useUser();
 
   const [formData, setFormData] = useState({
     name: "",
     category: "Room",
     location: "",
     deposit: 0,
-    description: ""
+    description: "",
+    image: null as File | null
   });
 
   const [availabilities, setAvailabilities] = useState([
@@ -37,7 +40,10 @@ export default function AdminResources() {
 
   const fetchResources = async () => {
     try {
-      const res = await fetch("http://localhost:3000/resources");
+      const endpoint = role === "admin" ? "http://localhost:3000/resources" : "http://localhost:3000/resources/me";
+      const res = await fetch(endpoint, {
+        credentials: "include"
+      });
       if (res.ok) {
         const data = await res.json();
         setResources(data);
@@ -53,24 +59,26 @@ export default function AdminResources() {
 
   const handleCreateResource = async () => {
     try {
-      const payload = {
-        name: formData.name,
-        category: formData.category,
-        location: formData.location,
-        deposit: Number(formData.deposit),
-        description: formData.description,
-        availabilities
-      };
+      const formDataPayload = new FormData();
+      formDataPayload.append("name", formData.name);
+      formDataPayload.append("category", formData.category);
+      formDataPayload.append("location", formData.location);
+      formDataPayload.append("deposit", formData.deposit.toString());
+      formDataPayload.append("description", formData.description);
+      formDataPayload.append("availabilities", JSON.stringify(availabilities));
+      if (formData.image) {
+        formDataPayload.append("image", formData.image);
+      }
 
       const res = await fetch("http://localhost:3000/resources", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        credentials: "include",
+        body: formDataPayload
       });
 
       if (res.ok) {
         setDialogOpen(false);
-        setFormData({ name: "", category: "Room", location: "", deposit: 0, description: "" });
+        setFormData({ name: "", category: "Room", location: "", deposit: 0, description: "", image: null });
         setAvailabilities([{ day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }]);
         fetchResources(); // Refresh list
       }
@@ -81,7 +89,10 @@ export default function AdminResources() {
 
   const handleDeleteResource = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:3000/resources/${id}`, { method: "DELETE" });
+      const res = await fetch(`http://localhost:3000/resources/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
       if (res.ok) fetchResources();
     } catch (error) {
       console.error("Error deleting resource:", error);
@@ -107,10 +118,17 @@ export default function AdminResources() {
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
         <Box>
-          <Typography variant="h4" gutterBottom>{t("adminRes.title") || "Manage Resources"}</Typography>
-          <Typography variant="body1" color="grey.500">{t("adminRes.subtitle") || "Add, edit or remove resources"}</Typography>
+          <Typography variant="h4" gutterBottom>
+            {role === "admin" ? (t("adminRes.title") || "All Platform Resources") : (t("adminRes.myListings") || "My Listings")}
+          </Typography>
+          <Typography variant="body1" color="grey.500">
+            {role === "admin" ? (t("adminRes.subtitle") || "Add, edit or remove resources from the entire platform") : (t("adminRes.mySubtitle") || "Manage your items for rent")}
+          </Typography>
         </Box>
-        <Button variant="contained" startIcon={<Add />} onClick={() => setDialogOpen(true)}>{t("adminRes.add") || "Add Resource"}</Button>
+        <Button variant="contained" size="large" startIcon={<Add />} onClick={() => setDialogOpen(true)}
+          sx={{ background: "linear-gradient(135deg, #7C4DFF, #00E5FF)", fontWeight: 600 }}>
+          {t("adminRes.add") || "Post new item"}
+        </Button>
       </Box>
 
       <Card>
@@ -159,11 +177,20 @@ export default function AdminResources() {
           <TextField fullWidth label="Location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
           <TextField fullWidth type="number" label="Deposit Fee" value={formData.deposit} onChange={(e) => setFormData({ ...formData, deposit: Number(e.target.value) })} />
 
+          <Button variant="outlined" component="label" fullWidth sx={{ mt: 1 }}>
+            {formData.image ? `Image selected: ${formData.image.name}` : "Upload Resource Image"}
+            <input type="file" hidden accept="image/*" onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setFormData({ ...formData, image: e.target.files[0] });
+              }
+            }} />
+          </Button>
+
           <Divider sx={{ my: 2 }} />
           <Typography variant="h6">Availabilities</Typography>
           {availabilities.map((av, index) => (
             <Grid container spacing={1} key={index} alignItems="center">
-              <Grid item xs={3}>
+              <Grid size={3}>
                 <TextField select fullWidth label="Day" value={av.day_of_week} onChange={(e) => updateAvailability(index, "day_of_week", Number(e.target.value))}>
                   <MenuItem value={1}>Mon</MenuItem>
                   <MenuItem value={2}>Tue</MenuItem>
@@ -174,13 +201,13 @@ export default function AdminResources() {
                   <MenuItem value={0}>Sun</MenuItem>
                 </TextField>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <TextField fullWidth label="Start Time" type="time" InputLabelProps={{ shrink: true }} value={av.start_time} onChange={(e) => updateAvailability(index, "start_time", e.target.value + ":00")} />
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <TextField fullWidth label="End Time" type="time" InputLabelProps={{ shrink: true }} value={av.end_time} onChange={(e) => updateAvailability(index, "end_time", e.target.value + ":00")} />
               </Grid>
-              <Grid item xs={1}>
+              <Grid size={1}>
                 <IconButton color="error" onClick={() => removeAvailabilityRow(index)}><Delete /></IconButton>
               </Grid>
             </Grid>

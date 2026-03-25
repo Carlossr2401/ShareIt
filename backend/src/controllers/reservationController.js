@@ -100,3 +100,24 @@ export const deleteReservation = async (req, res) => {
     res.status(500).json({ error: "No se pudo cancelar la reserva" });
   }
 };
+
+// Obtener todas las reservas (para admin)
+export const getAllReservations = async (req, res) => {
+  try {
+    const reservations = await prisma.reservation.findMany({
+      include: {
+        resource: true,
+        user: true
+      },
+      orderBy: [
+        { date: 'desc' },
+        { start_time: 'desc' }
+      ]
+    });
+
+    res.json(reservations);
+  } catch (error) {
+    console.error("Error al obtener todas las reservas:", error);
+    res.status(500).json({ error: "No se pudieron obtener las reservas" });
+  }
+};

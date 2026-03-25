@@ -69,11 +69,17 @@ export default function Resources() {
         {filtered.map((resource) => {
           const rType = resource.category || "Room";
           return (
-            <Grid item xs={12} sm={6} md={4} key={resource.resource_id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={resource.resource_id}>
               <Card sx={{ height: "100%", display: "flex", flexDirection: "column", transition: "transform 0.2s, box-shadow 0.2s", "&:hover": { transform: "translateY(-4px)", boxShadow: `0 8px 24px ${typeColors[rType]}22` } }}>
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
-                    <Box sx={{ width: 48, height: 48, borderRadius: 2.5, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType]}18`, color: typeColors[rType] }}>{typeIcons[rType] || typeIcons.Room}</Box>
+                    <Box sx={{ width: 48, height: 48, borderRadius: 2.5, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType]}18`, color: typeColors[rType], overflow: "hidden" }}>
+                      {resource.photo_url ? (
+                        <img src={resource.photo_url} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        typeIcons[rType] || typeIcons.Room
+                      )}
+                    </Box>
                     <Chip label="Available" size="small" sx={{ backgroundColor: "rgba(105,240,174,0.12)", color: "#69F0AE", fontWeight: 600 }} />
                   </Box>
                   <Typography variant="h6" sx={{ mb: 0.5 }}>{resource.name}</Typography>

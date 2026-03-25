@@ -6,8 +6,11 @@ import {
   updateResource,
   deleteResource,
   addAvailability,
-  removeAvailability
+  removeAvailability,
+  getMyResources,
+  upload
 } from "../controllers/resourceController.js";
+import { requireAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -103,6 +106,8 @@ const router = express.Router();
  */
 router.get("/", getResources);
 
+router.get("/me", requireAuth, getMyResources);
+
 /**
  * @swagger
  * /resources/{id}:
@@ -139,7 +144,7 @@ router.get("/:id", getResourceById);
  *       201:
  *         description: Recurso creado
  */
-router.post("/", createResource);
+router.post("/", requireAuth, upload.single("image"), createResource);
 
 /**
  * @swagger
@@ -163,7 +168,7 @@ router.post("/", createResource);
  *       200:
  *         description: Recurso actualizado
  */
-router.put("/:id", updateResource);
+router.put("/:id", requireAuth, updateResource);
 
 /**
  * @swagger
@@ -181,7 +186,7 @@ router.put("/:id", updateResource);
  *       200:
  *         description: Recurso eliminado
  */
-router.delete("/:id", deleteResource);
+router.delete("/:id", requireAuth, deleteResource);
 
 /**
  * @swagger

@@ -3,6 +3,7 @@ import {
   createReservation,
   getUserReservations,
   deleteReservation,
+  getAllReservations,
 } from "../controllers/reservationController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
@@ -79,6 +80,24 @@ router.use(requireAuth);
  *         description: Solapamiento de horarios o campos faltantes
  */
 router.post("/", createReservation);
+
+/**
+ * @swagger
+ * /reservations:
+ *   get:
+ *     summary: Obtiene todas las reservas (para admin)
+ *     tags: [Reservations]
+ *     responses:
+ *       200:
+ *         description: Lista de todas las reservas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ */
+router.get("/", getAllReservations);
 
 /**
  * @swagger

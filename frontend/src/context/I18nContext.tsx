@@ -18,6 +18,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.admin": "Admin",
     "nav.manageResources": "Manage Resources",
     "nav.allReservations": "All Reservations",
+    "nav.myListings": "My Listings",
     "nav.logout": "Log Out",
     "nav.appTitle": "Space & Equipment Reservation",
 
@@ -140,6 +141,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "adminRes.depositFee": "Deposit Fee (€)",
     "adminRes.cancelBtn": "Cancel",
     "adminRes.addBtn": "Add Resource",
+    "adminRes.myListings": "My Listings",
+    "adminRes.mySubtitle": "Manage the items you've posted for rent.",
 
     // Admin Reservations
     "adminBook.title": "All Reservations",
@@ -167,6 +170,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.admin": "Admin",
     "nav.manageResources": "Gestionar Recursos",
     "nav.allReservations": "Todas las Reservas",
+    "nav.myListings": "Mis Anuncios",
     "nav.logout": "Cerrar Sesión",
     "nav.appTitle": "Reserva de Espacios y Equipos",
 
@@ -289,6 +293,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "adminRes.depositFee": "Tarifa de Depósito (€)",
     "adminRes.cancelBtn": "Cancelar",
     "adminRes.addBtn": "Añadir Recurso",
+    "adminRes.myListings": "Mis Anuncios",
+    "adminRes.mySubtitle": "Gestiona los artículos que has subido para alquilar.",
 
     // Admin Reservations
     "adminBook.title": "Todas las Reservas",

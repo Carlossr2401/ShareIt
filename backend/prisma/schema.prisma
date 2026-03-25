@@ -33,6 +33,7 @@ model Resource {
   rules       String[]
   deposit     Float?
   category    String?
+  owner_id    String?  @db.Uuid
 
   is_archived Boolean @default(false)
 
