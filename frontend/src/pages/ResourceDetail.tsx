@@ -3,9 +3,21 @@ import {
   Box, Typography, Card, CardContent, Button, Chip,
   Divider, CircularProgress, Alert, Paper, Grid
 } from "@mui/material";
-import { ArrowBack, MeetingRoom, CalendarMonth, AccessTime, CheckCircle } from "@mui/icons-material";
+import { ArrowBack, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, CalendarMonth, AccessTime, CheckCircle } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
+
+const typeIcons: Record<string, React.ReactNode> = {
+  Room: <MeetingRoom fontSize="large" />, 
+  Laptop: <Laptop fontSize="large" />, 
+  Projector: <Tv fontSize="large" />, 
+  Vehicle: <DirectionsCar fontSize="large" />, 
+  Whiteboard: <Brush fontSize="large" />,
+};
+
+const typeColors: Record<string, string> = {
+  Room: "#7C4DFF", Laptop: "#00E5FF", Projector: "#FFD740", Vehicle: "#69F0AE", Whiteboard: "#FF80AB",
+};
 
 export default function ResourceDetail() {
   const navigate = useNavigate();
@@ -99,7 +111,9 @@ export default function ResourceDetail() {
             )}
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                <Box sx={{ width: 56, height: 56, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(124,77,255,0.15)", color: "#7C4DFF" }}><MeetingRoom fontSize="large" /></Box>
+                <Box sx={{ width: 56, height: 56, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType] || "#7C4DFF"}22`, color: typeColors[rType] || "#7C4DFF" }}>
+                  {typeIcons[rType] || typeIcons.Room}
+                </Box>
                 <Box>
                   <Typography variant="h5" fontWeight={700}>{resource.name}</Typography>
                   <Typography variant="body2" color="grey.500">{resource.location}</Typography>
@@ -107,6 +121,18 @@ export default function ResourceDetail() {
               </Box>
               <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.06)" }} />
               <Typography variant="body1" color="grey.300" sx={{ mb: 2 }}>{resource.description || "No description provided."}</Typography>
+              
+              {resource.rules && resource.rules.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, color: "primary.light" }}>{t("detail.rules") || "Rules & Requirements"}</Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {resource.rules.map((rule: string, i: number) => (
+                      <Chip key={i} label={rule} size="small" variant="outlined" sx={{ color: "grey.400", borderColor: "rgba(255,255,255,0.1)" }} />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
               <Box sx={{ display: "flex", gap: 2, mb: 1, flexWrap: "wrap" }}>
                 <Chip label={`Type: ${rType}`} variant="outlined" sx={{ borderColor: "#7C4DFF", color: "#7C4DFF" }} />
                 <Chip label={`Deposit: €${resource.deposit || 0}`} variant="outlined" sx={{ borderColor: "#69F0AE", color: "#69F0AE" }} />
