@@ -38,9 +38,9 @@ export default function Dashboard() {
       try {
         // Asegúrate de que las URLs coincidan con tu backend de Node/Laragon
         const [resResources, resMyReservations, resProfile] = await Promise.all([
-          axios.get("http://localhost:3000/api/resources", { withCredentials: true }),
-          axios.get("http://localhost:3000/api/reservations/me", { withCredentials: true }),
-          axios.get("http://localhost:3000/api/auth/me", { withCredentials: true })
+          axios.get("http://localhost:3000/resources", { withCredentials: true }),
+          axios.get("http://localhost:3000/reservations/me", { withCredentials: true }),
+          axios.get("http://localhost:3000/auth/me", { withCredentials: true })
         ]);
 
         setStatsData({
