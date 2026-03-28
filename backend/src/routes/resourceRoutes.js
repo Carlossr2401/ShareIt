@@ -8,7 +8,8 @@ import {
   addAvailability,
   removeAvailability,
   getMyResources,
-  upload
+  upload,
+  uploadImages
 } from "../controllers/resourceController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
@@ -144,7 +145,7 @@ router.get("/:id", getResourceById);
  *       201:
  *         description: Recurso creado
  */
-router.post("/", requireAuth, upload.single("image"), createResource);
+router.post("/", requireAuth, uploadImages, createResource);
 
 /**
  * @swagger
@@ -168,7 +169,7 @@ router.post("/", requireAuth, upload.single("image"), createResource);
  *       200:
  *         description: Recurso actualizado
  */
-router.put("/:id", requireAuth, updateResource);
+router.put("/:id", requireAuth, uploadImages, updateResource);
 
 /**
  * @swagger

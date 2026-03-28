@@ -4,6 +4,7 @@ import multer from "multer";
 
 const storage = multer.memoryStorage();
 export const upload = multer({ storage });
+export const uploadImages = upload.array("images", 10);
 
 // Obtener todos los recursos con sus disponibilidades
 export const getResources = async (req, res) => {
@@ -99,34 +100,43 @@ export const createResource = async (req, res) => {
       }
     });
 
-    // 3. Si hay imagen, subirla a Supabase usando el ID del recurso
-    if (imageFile) {
-      const fileExt = imageFile.originalname.split('.').pop();
-      const fileName = `image.${fileExt}`;
-      const filePath = `${newResource.resource_id}/${fileName}`;
+    // 3. Si hay imágenes, subirlas a Supabase usando el ID del recurso
+    if (req.files && req.files.length > 0) {
+      const publicUrls = [];
+      
+      for (let i = 0; i < req.files.length; i++) {
+        const imageFile = req.files[i];
+        const fileExt = imageFile.originalname.split('.').pop();
+        const fileName = `image_${Date.now()}_${i}.${fileExt}`;
+        const filePath = `${newResource.resource_id}/${fileName}`;
 
-      const { data, error } = await supabase.storage
-        .from('RessourcesImages')
-        .upload(filePath, imageFile.buffer, {
-          contentType: imageFile.mimetype,
-          upsert: true
-        });
-
-      if (error) {
-        console.error("Error subiendo a Supabase Storage:", error);
-      } else {
-        // Obtener URL pública
-        const { data: { publicUrl } } = supabase.storage
+        const { data, error } = await supabase.storage
           .from('RessourcesImages')
-          .getPublicUrl(filePath);
+          .upload(filePath, imageFile.buffer, {
+            contentType: imageFile.mimetype,
+            upsert: true
+          });
 
-        // Actualizar el recurso con la URL
+        if (error) {
+          console.error(`Error subiendo imagen ${i} a Supabase Storage:`, error);
+        } else {
+          // Obtener URL pública
+          const { data: { publicUrl } } = supabase.storage
+            .from('RessourcesImages')
+            .getPublicUrl(filePath);
+          
+          publicUrls.push(publicUrl);
+        }
+      }
+
+      if (publicUrls.length > 0) {
+        // Actualizar el recurso con el array de URLs
         await prisma.resource.update({
           where: { resource_id: newResource.resource_id },
-          data: { photo_url: publicUrl }
+          data: { photo_urls: publicUrls }
         });
         
-        newResource.photo_url = publicUrl;
+        newResource.photo_urls = publicUrls;
       }
     }
     
@@ -140,21 +150,59 @@ export const createResource = async (req, res) => {
 // Actualizar un recurso
 export const updateResource = async (req, res) => {
   const { id } = req.params;
-  const { name, description, location, photo_url, rules, deposit, category, is_archived } = req.body;
+  let { name, description, location, photo_urls, rules, deposit, category, is_archived } = req.body;
 
   try {
+    // Si es una petición multipart (FormData), parseamos los campos necesarios
+    if (rules && typeof rules === 'string') rules = JSON.parse(rules);
+    if (deposit) deposit = Number(deposit);
+    if (is_archived === 'true') is_archived = true;
+    if (is_archived === 'false') is_archived = false;
+
+    // 1. Si hay nuevas imágenes, subirlas
+    if (req.files && req.files.length > 0) {
+      const publicUrls = [];
+      
+      for (let i = 0; i < req.files.length; i++) {
+        const imageFile = req.files[i];
+        const fileExt = imageFile.originalname.split('.').pop();
+        const fileName = `image_${Date.now()}_${i}.${fileExt}`;
+        const filePath = `${id}/${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from('RessourcesImages')
+          .upload(filePath, imageFile.buffer, {
+            contentType: imageFile.mimetype,
+            upsert: true
+          });
+
+        if (!error) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('RessourcesImages')
+            .getPublicUrl(filePath);
+          
+          publicUrls.push(publicUrl);
+        }
+      }
+
+      if (publicUrls.length > 0) {
+        photo_urls = publicUrls;
+      }
+    }
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (location !== undefined) updateData.location = location;
+    if (photo_urls !== undefined) updateData.photo_urls = photo_urls;
+    if (rules !== undefined) updateData.rules = rules;
+    if (deposit !== undefined) updateData.deposit = deposit;
+    if (category !== undefined) updateData.category = category;
+    if (is_archived !== undefined) updateData.is_archived = is_archived;
+
     const updatedResource = await prisma.resource.update({
       where: { resource_id: id },
-      data: {
-        name,
-        description,
-        location,
-        photo_url,
-        rules,
-        deposit,
-        category,
-        is_archived
-      }
+      data: updateData
     });
 
     res.json(updatedResource);

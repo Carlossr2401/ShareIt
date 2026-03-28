@@ -74,8 +74,12 @@ export default function Resources() {
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
                     <Box sx={{ width: 48, height: 48, borderRadius: 2.5, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType]}18`, color: typeColors[rType], overflow: "hidden" }}>
-                      {resource.photo_url ? (
-                        <img src={resource.photo_url} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      {resource.photo_urls ? (
+                        Array.isArray(resource.photo_urls) ? (
+                          resource.photo_urls[0] ? <img src={resource.photo_urls[0]} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : typeIcons[rType] || typeIcons.Room
+                        ) : (
+                          <img src={resource.photo_urls} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        )
                       ) : (
                         typeIcons[rType] || typeIcons.Room
                       )}

@@ -104,9 +104,31 @@ export default function ResourceDetail() {
         {/* Left: Resource Info */}
         <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ mb: 3 }}>
-            {resource.photo_url && (
-              <Box sx={{ width: "100%", height: 240, overflow: "hidden" }}>
-                <img src={resource.photo_url} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            {resource.photo_urls && (
+              <Box sx={{ bgcolor: "black", borderRadius: "12px 12px 0 0", overflow: "hidden" }}>
+                {Array.isArray(resource.photo_urls) ? (
+                  resource.photo_urls.length > 0 ? (
+                    <Box sx={{ 
+                      width: "100%", 
+                      height: 400, 
+                      display: "flex", 
+                      overflowX: "auto", 
+                      gap: 0.5,
+                      '&::-webkit-scrollbar': { height: '6px' },
+                      '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '3px' }
+                    }}>
+                      {resource.photo_urls.map((url: string, index: number) => (
+                        <Box key={index} sx={{ flex: "0 0 auto", width: "100%", height: "100%" }}>
+                          <img src={url} alt={`${resource.name} ${index}`} style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} />
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : null
+                ) : (
+                  <Box sx={{ width: "100%", height: 350 }}>
+                    <img src={resource.photo_urls} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </Box>
+                )}
               </Box>
             )}
             <CardContent>

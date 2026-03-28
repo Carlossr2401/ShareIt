@@ -29,7 +29,7 @@ model Resource {
   name        String
   description String?
   location    String?
-  photo_url   String?
+  photo_urls   String[]
   rules       String[]
   deposit     Float?
   category    String?

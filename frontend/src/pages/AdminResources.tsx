@@ -3,7 +3,7 @@ import {
   Box, Typography, Card, CardContent, Table, TableHead, TableRow,
   TableCell, TableBody, TableContainer, Button, IconButton, Tooltip,
   Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem,
-  Grid, Divider
+  Grid, Divider, CircularProgress, Backdrop
 } from "@mui/material";
 import { Add, Edit, Delete, MeetingRoom, Laptop, Tv, DirectionsCar, Brush } from "@mui/icons-material";
 import { useI18n } from "../context/I18nContext";
@@ -22,6 +22,7 @@ const typeColors: Record<string, string> = {
 export default function AdminResources() {
   const [resources, setResources] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { t } = useI18n();
   const { role } = useUser();
 
@@ -32,7 +33,7 @@ export default function AdminResources() {
     deposit: 0,
     description: "",
     rules: [] as string[],
-    image: null as File | null
+    images: [] as File[]
   });
 
   const [editId, setEditId] = useState<string | null>(null);
@@ -71,20 +72,22 @@ export default function AdminResources() {
         deposit: resource.deposit || 0,
         description: resource.description || "",
         rules: resource.rules || [],
-        image: null
+        images: []
       });
       setAvailabilities(resource.availabilities || [{ day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }]);
     } else {
       setEditId(null);
-      setFormData({ name: "", category: "Room", location: "", deposit: 0, description: "", rules: [], image: null });
+      setFormData({ name: "", category: "Room", location: "", deposit: 0, description: "", rules: [], images: [] });
       setAvailabilities([{ day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }]);
     }
     setDialogOpen(true);
   };
 
   const handleSaveResource = async () => {
+    setSaving(true);
     try {
       const formDataPayload = new FormData();
+      // ... (omitted parts of formData filling for brevity in chunking, but I'll replace the whole function content properly)
       formDataPayload.append("name", formData.name);
       formDataPayload.append("category", formData.category);
       formDataPayload.append("location", formData.location);
@@ -92,49 +95,43 @@ export default function AdminResources() {
       formDataPayload.append("description", formData.description);
       formDataPayload.append("rules", JSON.stringify(formData.rules));
       formDataPayload.append("availabilities", JSON.stringify(availabilities));
-      if (formData.image) {
-        formDataPayload.append("image", formData.image);
+      
+      if (formData.images.length > 0) {
+        formData.images.forEach(img => {
+          formDataPayload.append("images", img);
+        });
       }
 
       const url = editId ? `http://localhost:3000/resources/${editId}` : "http://localhost:3000/resources";
       const method = editId ? "PUT" : "POST";
 
+      const useFormData = !editId || (editId && formData.images.length > 0);
+      
       const res = await fetch(url, {
         method,
         credentials: "include",
-        ...(editId ? {
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name,
-            category: formData.category,
-            location: formData.location,
-            deposit: formData.deposit,
-            description: formData.description,
-            rules: formData.rules,
-            // Assuming availabilities are handled separately for updates or this simple replace approach
-          })
-        } : {
-          body: formDataPayload
+        headers: !useFormData ? { "Content-Type": "application/json" } : undefined,
+        body: useFormData ? formDataPayload : JSON.stringify({
+          name: formData.name,
+          category: formData.category,
+          location: formData.location,
+          deposit: formData.deposit,
+          description: formData.description,
+          rules: formData.rules,
         })
       });
 
-      // Note: If using FormData for PUT, you'd need the backend to handle it. 
-      // Simplified: If editId exists, we send JSON for simplicity, unless image is present.
-      // Re-doing the fetch logic to handle FormData for both if needed:
-      if (editId && formData.image) {
-          // If editing AND image is changed, use FormData
-          const resImage = await fetch(url, { method: "PUT", credentials: "include", body: formDataPayload });
-          if (resImage.ok) { setDialogOpen(false); fetchResources(); }
+      if (res.ok) {
+        setDialogOpen(false);
+        fetchResources();
       } else {
-          const finalMethod = editId ? "PUT" : "POST";
-          const finalBody = editId ? JSON.stringify({ ...formData, rules: formData.rules }) : formDataPayload;
-          const finalHeaders = editId ? { "Content-Type": "application/json" } : undefined;
-          
-          const resFinal = await fetch(url, { method: finalMethod, credentials: "include", headers: finalHeaders, body: finalBody as any });
-          if (resFinal.ok) { setDialogOpen(false); fetchResources(); }
+        const errorData = await res.json();
+        console.error("Error saving resource:", errorData.error);
       }
     } catch (error) {
       console.error("Error saving resource:", error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -297,15 +294,25 @@ export default function AdminResources() {
           </Box>
 
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>Media</Typography>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>Media (Photos)</Typography>
             <Button variant="outlined" component="label" fullWidth sx={{ py: 1.5, borderStyle: "dashed", borderColor: "grey.700" }}>
-              {formData.image ? `Image selected: ${formData.image.name}` : "Click to upload image"}
-              <input type="file" hidden accept="image/*" onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  setFormData({ ...formData, image: e.target.files[0] });
+              {formData.images.length > 0 ? `${formData.images.length} photos selected` : "Click to upload multiple images"}
+              <input type="file" hidden accept="image/*" multiple onChange={(e) => {
+                if (e.target.files) {
+                  setFormData({ ...formData, images: Array.from(e.target.files) });
                 }
               }} />
             </Button>
+            {formData.images.length > 0 && (
+              <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
+                {formData.images.map((img, i) => (
+                  <Chip key={i} label={img.name} size="small" onDelete={() => {
+                    const newImgs = formData.images.filter((_, idx) => idx !== i);
+                    setFormData({...formData, images: newImgs});
+                  }} />
+                ))}
+              </Box>
+            )}
           </Box>
 
           <Divider sx={{ my: 1 }} />
@@ -339,12 +346,20 @@ export default function AdminResources() {
 
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
-          <Button onClick={() => setDialogOpen(false)} color="inherit">{t("adminRes.cancelBtn")}</Button>
-          <Button variant="contained" onClick={handleSaveResource} sx={{ px: 4, background: "linear-gradient(135deg, #7C4DFF, #651FFF)", fontWeight: 700 }}>
-            {editId ? t("adminRes.updateBtn") : t("adminRes.addBtn")}
+          <Button onClick={() => setDialogOpen(false)} color="inherit" disabled={saving}>{t("adminRes.cancelBtn")}</Button>
+          <Button variant="contained" onClick={handleSaveResource} disabled={saving} sx={{ px: 4, background: "linear-gradient(135deg, #7C4DFF, #651FFF)", fontWeight: 700, minWidth: 120 }}>
+            {saving ? <CircularProgress size={24} color="inherit" /> : (editId ? t("adminRes.updateBtn") : t("adminRes.addBtn"))}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2000, flexDirection: "column", gap: 2 }}
+        open={saving}
+      >
+        <CircularProgress color="inherit" />
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>Saving Resource...</Typography>
+      </Backdrop>
     </Box>
   );
 }
