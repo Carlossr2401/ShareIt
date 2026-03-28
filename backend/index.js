@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(
   cors({
-    origin: "http://localhost:5173", // Cambiar según el puerto del frontend
+    origin: 'http://localhost:5173', // Updated for new Vite port
     credentials: true, // Permitir envío de cookies
   }),
 );
@@ -49,3 +49,4 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
   console.log(`Documentación disponible en http://localhost:${PORT}/api-docs`);
 });
+
