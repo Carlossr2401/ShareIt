@@ -12,7 +12,6 @@ import { useI18n } from "../context/I18nContext";
 import { useUser } from "../context/UserContext";
 import axios from "axios";
 
-// Definimos un tipo que incluye la relación con el recurso, tal como lo envía Prisma
 type ReservationWithResource = Prisma.ReservationGetPayload<{
   include: { resource: true }
 }>;
@@ -29,14 +28,12 @@ export default function Dashboard() {
     balance: 0
   });
 
-  // Usamos el tipo extendido para evitar errores de "property does not exist"
   const [recentReservations, setRecentReservations] = useState<ReservationWithResource[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Asegúrate de que las URLs coincidan con tu backend de Node/Laragon
         const [resResources, resMyReservations, resProfile] = await Promise.all([
           axios.get("http://localhost:3000/resources", { withCredentials: true }),
           axios.get("http://localhost:3000/reservations/me", { withCredentials: true }),
@@ -107,7 +104,7 @@ export default function Dashboard() {
                 <Box sx={{ 
                   width: 52, 
                   height: 52, 
-                  minWidth: 52, // Crucial para que el círculo no se deforme
+                  minWidth: 52,
                   borderRadius: 3, 
                   display: "flex", 
                   alignItems: "center", 
