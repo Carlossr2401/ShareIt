@@ -7,33 +7,67 @@ datasource db {
 }
 
 model Profile {
-  id         String   @id @db.Uuid
-  email      String   @unique // Para consultas rápidas desde el backend
-  username   String   @unique
+  id         String  @id @db.Uuid
+  email      String  @unique // Para consultas rápidas desde el backend
+  username   String  @unique
   full_name  String?
   avatar_url String?
   bio        String?
-  wallet     Float    @default(0)
+  wallet     Float   @default(0)
 
   updated_at DateTime @updatedAt
   created_at DateTime @default(now())
 
+  reservations Reservation[]
+
   @@map("profiles")
 }
 
-model Product {
-  id              String   @id @default(uuid()) @db.Uuid
-  name            String
-  description     String?
-  category        String?
-  photo_url       String?
-  virtual_deposit Float?
-  rules           String[]
-  stock           Int      @default(0)
-  is_archived     Boolean  @default(false)
-  
-  updated_at      DateTime @updatedAt
-  created_at      DateTime @default(now())
 
-  @@map("products")
+model Resource {
+  resource_id String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  location    String?
+  photo_urls   String[]
+  rules       String[]
+  deposit     Float?
+  category    String?
+  owner_id    String?  @db.Uuid
+
+  is_archived Boolean @default(false)
+
+  updated_at DateTime @updatedAt
+  created_at DateTime @default(now())
+
+  availabilities Availability[]
+  reservations   Reservation[]
+
+  @@map("resources")
+}
+
+model Availability {
+  availability_id String   @id @default(uuid()) @db.Uuid
+  resource_id     String   @db.Uuid
+  day_of_week     Int // 0 = Sunday, 1 = Monday, etc.
+  start_time      DateTime @db.Time
+  end_time        DateTime @db.Time
+
+  resource Resource @relation(fields: [resource_id], references: [resource_id], onDelete: Cascade)
+
+  @@map("availabilities")
+}
+
+model Reservation {
+  reservation_id String   @id @default(uuid()) @db.Uuid
+  resource_id    String   @db.Uuid
+  user_id        String   @db.Uuid
+  date           DateTime @db.Date
+  start_time     DateTime @db.Time
+  end_time       DateTime @db.Time
+
+  resource Resource @relation(fields: [resource_id], references: [resource_id], onDelete: Cascade)
+  user     Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("reservations")
 }

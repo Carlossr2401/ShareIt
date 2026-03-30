@@ -1,94 +1,286 @@
+import { useState, useEffect } from "react";
 import {
-  Box, Typography, Card, CardContent, Grid, Button, Chip,
-  TextField, MenuItem, Divider,
+  Box, Typography, Card, CardContent, Button, Chip,
+  Divider, CircularProgress, Alert, Paper, Grid
 } from "@mui/material";
-import { ArrowBack, MeetingRoom, CalendarMonth, AccessTime, CheckCircle } from "@mui/icons-material";
+import { ArrowBack, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, CalendarMonth, AccessTime, CheckCircle } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
 
-const mockResource = {
-  name: "Conference Room A", type: "Room", location: "Building 1, Floor 2",
-  capacity: "12 people", fee: "€2.00",
-  description: "A modern conference room equipped with a projector, sound system, and whiteboard. Ideal for meetings, presentations, and workshops.",
-  amenities: ["Projector", "Whiteboard", "Sound System", "Wi-Fi", "Air Conditioning"],
+const typeIcons: Record<string, React.ReactNode> = {
+  Room: <MeetingRoom fontSize="large" />, 
+  Laptop: <Laptop fontSize="large" />, 
+  Projector: <Tv fontSize="large" />, 
+  Vehicle: <DirectionsCar fontSize="large" />, 
+  Whiteboard: <Brush fontSize="large" />,
 };
 
-const timeSlots = [
-  { time: "08:00 – 09:00", available: true }, { time: "09:00 – 10:00", available: false },
-  { time: "10:00 – 11:00", available: true }, { time: "11:00 – 12:00", available: true },
-  { time: "12:00 – 13:00", available: false }, { time: "13:00 – 14:00", available: true },
-  { time: "14:00 – 15:00", available: true }, { time: "15:00 – 16:00", available: false },
-  { time: "16:00 – 17:00", available: true }, { time: "17:00 – 18:00", available: true },
-];
+const typeColors: Record<string, string> = {
+  Room: "#7C4DFF", Laptop: "#00E5FF", Projector: "#FFD740", Vehicle: "#69F0AE", Whiteboard: "#FF80AB",
+};
 
 export default function ResourceDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  void id;
   const { t } = useI18n();
+
+  const [resource, setResource] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Form fields
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  const [successStatus, setSuccessStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchResource = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/resources/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setResource(data);
+        }
+      } catch (error) {
+        console.error("Error fetching resource:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResource();
+  }, [id]);
+
+  const handleBook = async () => {
+    if (!selectedSlot || !date) {
+      setErrorStatus("Please select a date and an available time slot.");
+      return;
+    }
+
+    setErrorStatus(null);
+    setSuccessStatus(null);
+
+    const startTime = new Date(selectedSlot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+    const endTime = new Date(selectedSlot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+
+    try {
+      const res = await fetch("http://localhost:3000/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", 
+        body: JSON.stringify({
+          resource_id: id,
+          date,
+          start_time: startTime + ":00",
+          end_time: endTime + ":00"
+        })
+      });
+
+      if (res.ok) {
+        setSuccessStatus("Reservation created successfully!");
+        setSelectedSlot(null);
+      } else {
+        const data = await res.json();
+        setErrorStatus(data.error || "Error creating reservation");
+      }
+    } catch (error) {
+      setErrorStatus("Network error occurred");
+    }
+  };
+
+  if (loading) return <Box sx={{ p: 4, textAlign: "center" }}><CircularProgress /></Box>;
+  if (!resource) return <Box sx={{ p: 4 }}><Typography color="error">Resource not found.</Typography></Box>;
+
+  const rType = resource.category || "Room";
+  const selectedDayOfWeek = new Date(date).getUTCDay();
+
+  // Filter slots for the selected day of week
+  const availableSlots = resource.availabilities?.filter((slot: any) => slot.day_of_week === selectedDayOfWeek) || [];
 
   return (
     <Box>
-      <Button startIcon={<ArrowBack />} onClick={() => navigate("/resources")} sx={{ mb: 2, color: "grey.400" }}>{t("detail.back")}</Button>
+      <Button startIcon={<ArrowBack />} onClick={() => navigate("/resources")} sx={{ mb: 2, color: "grey.400" }}>{t("detail.back") || "Back"}</Button>
+      
       <Grid container spacing={3}>
+        {/* Left: Resource Info */}
         <Grid size={{ xs: 12, md: 7 }}>
-          <Card>
+          <Card sx={{ mb: 3 }}>
+            {resource.photo_urls && (
+              <Box sx={{ bgcolor: "black", borderRadius: "12px 12px 0 0", overflow: "hidden" }}>
+                {Array.isArray(resource.photo_urls) ? (
+                  resource.photo_urls.length > 0 ? (
+                    <Box sx={{ 
+                      width: "100%", 
+                      height: 400, 
+                      display: "flex", 
+                      overflowX: "auto", 
+                      gap: 0.5,
+                      '&::-webkit-scrollbar': { height: '6px' },
+                      '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '3px' }
+                    }}>
+                      {resource.photo_urls.map((url: string, index: number) => (
+                        <Box key={index} sx={{ flex: "0 0 auto", width: "100%", height: "100%" }}>
+                          <img src={url} alt={`${resource.name} ${index}`} style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} />
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : null
+                ) : (
+                  <Box sx={{ width: "100%", height: 350 }}>
+                    <img src={resource.photo_urls} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </Box>
+                )}
+              </Box>
+            )}
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                <Box sx={{ width: 56, height: 56, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(124,77,255,0.15)", color: "#7C4DFF" }}><MeetingRoom fontSize="large" /></Box>
-                <Box><Typography variant="h5">{mockResource.name}</Typography><Typography variant="body2" color="grey.500">{mockResource.location}</Typography></Box>
+                <Box sx={{ width: 56, height: 56, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType] || "#7C4DFF"}22`, color: typeColors[rType] || "#7C4DFF" }}>
+                  {typeIcons[rType] || typeIcons.Room}
+                </Box>
+                <Box>
+                  <Typography variant="h5" fontWeight={700}>{resource.name}</Typography>
+                  <Typography variant="body2" color="grey.500">{resource.location}</Typography>
+                </Box>
               </Box>
               <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.06)" }} />
-              <Typography variant="body1" color="grey.300" sx={{ mb: 2 }}>{mockResource.description}</Typography>
-              <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
-                <Chip label={`${t("resources.type")}: ${mockResource.type}`} variant="outlined" sx={{ borderColor: "#7C4DFF", color: "#7C4DFF" }} />
-                <Chip label={`${t("detail.capacity")}: ${mockResource.capacity}`} variant="outlined" sx={{ borderColor: "#00E5FF", color: "#00E5FF" }} />
-                <Chip label={`${t("resources.deposit")}: ${mockResource.fee}`} variant="outlined" sx={{ borderColor: "#69F0AE", color: "#69F0AE" }} />
-              </Box>
-              <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>{t("detail.amenities")}</Typography>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                {mockResource.amenities.map((a) => <Chip key={a} label={a} size="small" sx={{ backgroundColor: "rgba(255,255,255,0.06)" }} />)}
+              <Typography variant="body1" color="grey.300" sx={{ mb: 2 }}>{resource.description || "No description provided."}</Typography>
+              
+              {resource.rules && resource.rules.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, color: "primary.light" }}>{t("detail.rules") || "Rules & Requirements"}</Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {resource.rules.map((rule: string, i: number) => (
+                      <Chip key={i} label={rule} size="small" variant="outlined" sx={{ color: "grey.400", borderColor: "rgba(255,255,255,0.1)" }} />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              <Box sx={{ display: "flex", gap: 2, mb: 1, flexWrap: "wrap" }}>
+                <Chip label={`Type: ${rType}`} variant="outlined" sx={{ borderColor: "#7C4DFF", color: "#7C4DFF" }} />
+                <Chip label={`Deposit: €${resource.deposit || 0}`} variant="outlined" sx={{ borderColor: "#69F0AE", color: "#69F0AE" }} />
               </Box>
             </CardContent>
           </Card>
-          <Card sx={{ mt: 3 }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}><AccessTime sx={{ color: "secondary.main" }} /> {t("detail.timeSlots")}</Typography>
-              <Typography variant="body2" color="grey.500" sx={{ mb: 2 }}>{t("detail.timeSlotsHint")}</Typography>
-              <Grid container spacing={1.5}>
-                {timeSlots.map((slot) => (
-                  <Grid size={{ xs: 6, sm: 4, md: 3 }} key={slot.time}>
-                    <Button fullWidth variant={slot.available ? "outlined" : "text"} disabled={!slot.available}
-                      sx={{ py: 1.5, borderColor: slot.available ? "primary.main" : "transparent", color: slot.available ? "primary.light" : "grey.700", "&:hover": slot.available ? { backgroundColor: "rgba(124,77,255,0.12)" } : {} }}>
-                      {slot.time}
-                    </Button>
-                  </Grid>
-                ))}
+
+          {/* Slots Section */}
+          <Paper sx={{ p: 3, borderRadius: 4, bgcolor: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+            <Typography variant="h6" sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+              <AccessTime sx={{ color: "primary.main" }} /> {t("detail.timeSlots") || "Available slots for your date"}
+            </Typography>
+            
+            <Typography variant="body2" color="grey.500" sx={{ mb: 2 }}>
+              Date: <strong>{new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+            </Typography>
+
+            {availableSlots.length > 0 ? (
+              <Grid container spacing={2}>
+                {availableSlots.map((slot: any) => {
+                  const startRaw = new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+                  const endRaw = new Date(slot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+                  const isActive = selectedSlot?.availability_id === slot.availability_id;
+
+                  return (
+                    <Grid size={{ xs: 12, sm: 6 }} key={slot.availability_id}>
+                      <Button 
+                        fullWidth 
+                        variant={isActive ? "contained" : "outlined"} 
+                        onClick={() => setSelectedSlot(slot)}
+                        sx={{ 
+                          py: 2, 
+                          borderRadius: 3,
+                          transition: "0.2s",
+                          borderColor: isActive ? "primary.main" : "rgba(124,77,255,0.3)",
+                          background: isActive ? "linear-gradient(135deg, #7C4DFF, #651FFF)" : "transparent",
+                          color: isActive ? "white" : "primary.light",
+                          "&:hover": {
+                            borderColor: "primary.main",
+                            backgroundColor: isActive ? undefined : "rgba(124,77,255,0.08)"
+                          }
+                        }}
+                      >
+                        {startRaw} - {endRaw}
+                      </Button>
+                    </Grid>
+                  );
+                })}
               </Grid>
-            </CardContent>
-          </Card>
+            ) : (
+              <Alert severity="info" sx={{ borderRadius: 3 }}>
+                No slots configured for this day of the week. Try another date.
+              </Alert>
+            )}
+          </Paper>
         </Grid>
+
+        {/* Right: Booking Actions */}
         <Grid size={{ xs: 12, md: 5 }}>
-          <Card sx={{ position: "sticky", top: 80 }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}><CalendarMonth sx={{ color: "primary.main" }} /> {t("detail.bookThis")}</Typography>
-              <TextField fullWidth label={t("detail.date")} type="date" defaultValue="2026-03-18" sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
-              <TextField fullWidth select label={t("detail.startTime")} defaultValue="10:00" sx={{ mb: 2 }}>
-                {["08:00","10:00","11:00","13:00","14:00","16:00","17:00"].map(v => <MenuItem key={v} value={v}>{v}</MenuItem>)}
-              </TextField>
-              <TextField fullWidth select label={t("detail.endTime")} defaultValue="12:00" sx={{ mb: 2 }}>
-                {["09:00","11:00","12:00","14:00","15:00","17:00","18:00"].map(v => <MenuItem key={v} value={v}>{v}</MenuItem>)}
-              </TextField>
-              <TextField fullWidth label={t("detail.notes")} multiline rows={2} sx={{ mb: 3 }} />
-              <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.06)" }} />
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                <Typography variant="body2" color="grey.500">{t("detail.refundableDeposit")}</Typography>
-                <Typography variant="body2" fontWeight={600}>{mockResource.fee}</Typography>
+          <Card sx={{ position: "sticky", top: 80, borderRadius: 4 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
+                <CalendarMonth sx={{ color: "primary.main" }} /> {t("detail.bookThis") || "Choose Date & Book"}
+              </Typography>
+              
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>Step 1: Select Date</Typography>
+                <input 
+                  type="date" 
+                  value={date} 
+                  onChange={e => { setDate(e.target.value); setSelectedSlot(null); }}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "white",
+                    fontSize: "1rem",
+                    outline: "none"
+                  }}
+                />
               </Box>
-              <Typography variant="caption" color="grey.600" sx={{ display: "block", mb: 3 }}>{t("detail.depositNote")}</Typography>
-              <Button fullWidth variant="contained" size="large" startIcon={<CheckCircle />}
-                sx={{ py: 1.5, background: "linear-gradient(135deg, #7C4DFF, #651FFF)", "&:hover": { background: "linear-gradient(135deg, #9C7CFF, #7C4DFF)" } }}>
-                {t("detail.confirm")}
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>Step 2: Selected Slot</Typography>
+                {selectedSlot ? (
+                  <Chip 
+                    label={`${new Date(selectedSlot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} - ${new Date(selectedSlot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}`} 
+                    onDelete={() => setSelectedSlot(null)}
+                    color="primary"
+                    sx={{ width: "100%", py: 1, height: 'auto', borderRadius: 2, fontSize: "1rem" }}
+                  />
+                ) : (
+                  <Typography variant="body2" color="grey.600">No slot selected yet.</Typography>
+                )}
+              </Box>
+              
+              {errorStatus && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{errorStatus}</Alert>}
+              {successStatus && <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>{successStatus}</Alert>}
+
+              <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.06)" }} />
+              
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                <Typography variant="body1" color="grey.400">Total Deposit</Typography>
+                <Typography variant="h6" fontWeight={700} color="#69F0AE">€{resource.deposit || 0}</Typography>
+              </Box>
+
+              <Button 
+                fullWidth 
+                variant="contained" 
+                size="large" 
+                disabled={!selectedSlot}
+                startIcon={<CheckCircle />} 
+                onClick={handleBook}
+                sx={{ 
+                  py: 1.8, 
+                  borderRadius: 3,
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  background: "linear-gradient(135deg, #7C4DFF, #651FFF)", 
+                  "&:hover": { background: "linear-gradient(135deg, #9C7CFF, #7C4DFF)" },
+                  boxShadow: "0 8px 16px rgba(124, 77, 255, 0.3)"
+                }}
+              >
+                {t("detail.confirm") || "Book Now"}
               </Button>
             </CardContent>
           </Card>

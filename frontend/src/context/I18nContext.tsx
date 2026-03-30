@@ -18,6 +18,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.admin": "Admin",
     "nav.manageResources": "Manage Resources",
     "nav.allReservations": "All Reservations",
+    "nav.myListings": "My Listings",
     "nav.logout": "Log Out",
     "nav.appTitle": "Space & Equipment Reservation",
 
@@ -39,6 +40,9 @@ const translations: Record<Lang, Record<string, string>> = {
     "register.roleUser": "User",
     "register.roleAdmin": "Administrator",
     "register.create": "Create Account",
+    "register.username": "Username",
+    "register.bio": "Short Bio",
+    "register.passwordHint": "6-12 characters, no spaces",
     "register.hasAccount": "Already have an account?",
     "register.signIn": "Sign in",
 
@@ -84,6 +88,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "detail.confirm": "Confirm Reservation",
     "detail.timeSlots": "Available Time Slots",
     "detail.timeSlotsHint": "Select a date above, then pick an available slot to book.",
+    "detail.rules": "Rules & Requirements",
     "detail.amenities": "Amenities",
     "detail.capacity": "Capacity",
 
@@ -140,6 +145,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "adminRes.depositFee": "Deposit Fee (€)",
     "adminRes.cancelBtn": "Cancel",
     "adminRes.addBtn": "Add Resource",
+    "adminRes.updateBtn": "Update Resource",
+    "adminRes.description": "Description",
+    "adminRes.rules": "Rules & Requirements",
+    "adminRes.details": "Details & Rules",
+    "adminRes.myListings": "My Listings",
+    "adminRes.mySubtitle": "Manage the items you've posted for rent.",
 
     // Admin Reservations
     "adminBook.title": "All Reservations",
@@ -167,6 +178,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.admin": "Admin",
     "nav.manageResources": "Gestionar Recursos",
     "nav.allReservations": "Todas las Reservas",
+    "nav.myListings": "Mis Anuncios",
     "nav.logout": "Cerrar Sesión",
     "nav.appTitle": "Reserva de Espacios y Equipos",
 
@@ -188,6 +200,9 @@ const translations: Record<Lang, Record<string, string>> = {
     "register.roleUser": "Usuario",
     "register.roleAdmin": "Administrador",
     "register.create": "Crear Cuenta",
+    "register.username": "Nombre de Usuario",
+    "register.bio": "Breve Biografía",
+    "register.passwordHint": "6-12 caracteres, sin espacios",
     "register.hasAccount": "¿Ya tienes una cuenta?",
     "register.signIn": "Iniciar sesión",
 
@@ -289,6 +304,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "adminRes.depositFee": "Tarifa de Depósito (€)",
     "adminRes.cancelBtn": "Cancelar",
     "adminRes.addBtn": "Añadir Recurso",
+    "adminRes.updateBtn": "Actualizar Recurso",
+    "adminRes.description": "Descripción",
+    "adminRes.rules": "Reglas y Requisitos",
+    "adminRes.details": "Detalles y Reglas",
+    "adminRes.myListings": "Mis Anuncios",
+    "adminRes.mySubtitle": "Gestiona los artículos que has subido para alquilar.",
 
     // Admin Reservations
     "adminBook.title": "Todas las Reservas",

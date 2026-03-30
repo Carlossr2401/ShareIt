@@ -50,12 +50,15 @@ export default function MainLayout() {
     { text: t("nav.wallet"), icon: <AccountBalanceWallet />, path: "/wallet" },
   ];
 
-  const adminMenuItems = [
+  const commonAdminItems = [
     {
-      text: t("nav.manageResources"),
+      text: role === "admin" ? t("nav.manageResources") : t("nav.myListings"),
       icon: <AdminPanelSettings />,
       path: "/admin/resources",
     },
+  ];
+
+  const adminOnlyItems = [
     {
       text: t("nav.allReservations"),
       icon: <ListAlt />,
@@ -199,62 +202,90 @@ export default function MainLayout() {
           ))}
         </List>
 
-        {/* Admin section — only visible to admins */}
-        {role === "admin" && (
-          <>
-            <Divider
-              sx={{ borderColor: "rgba(124,77,255,0.12)", mx: 2, my: 1 }}
-            />
-            <Typography
-              variant="caption"
-              sx={{
-                px: 3,
-                py: 1,
-                color: "grey.600",
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              {t("nav.admin")}
-            </Typography>
-            <List sx={{ px: 1 }}>
-              {adminMenuItems.map((item) => (
-                <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
-                  <ListItemButton
-                    onClick={() => navigate(item.path)}
-                    selected={location.pathname === item.path}
-                    sx={{
-                      borderRadius: 2,
-                      "&.Mui-selected": {
-                        backgroundColor: "rgba(124,77,255,0.15)",
-                        "&:hover": { backgroundColor: "rgba(124,77,255,0.25)" },
-                      },
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        color:
-                          location.pathname === item.path
-                            ? "primary.main"
-                            : "grey.500",
-                        minWidth: 40,
-                      }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.text}
-                      primaryTypographyProps={{
-                        fontSize: "0.9rem",
-                        fontWeight: location.pathname === item.path ? 600 : 400,
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-          </>
-        )}
+        {/* Custom Section */}
+        <Divider sx={{ borderColor: "rgba(124, 77, 255, 0.12)", mx: 2, my: 1 }} />
+        <Typography
+          variant="caption"
+          sx={{
+            px: 3,
+            py: 1,
+            color: "grey.600",
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          {role === "admin" ? t("nav.admin") : t("nav.myListings")}
+        </Typography>
+        <List sx={{ px: 1 }}>
+          {commonAdminItems.map((item) => (
+            <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                onClick={() => navigate(item.path)}
+                selected={location.pathname === item.path}
+                sx={{
+                  borderRadius: 2,
+                  "&.Mui-selected": {
+                    backgroundColor: "rgba(124,77,255,0.15)",
+                    "&:hover": { backgroundColor: "rgba(124,77,255,0.25)" },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    color:
+                      location.pathname === item.path
+                        ? "primary.main"
+                        : "grey.500",
+                    minWidth: 40,
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontSize: "0.9rem",
+                    fontWeight: location.pathname === item.path ? 600 : 400,
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+          {role === "admin" && adminOnlyItems.map((item) => (
+            <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                onClick={() => navigate(item.path)}
+                selected={location.pathname === item.path}
+                sx={{
+                  borderRadius: 2,
+                  "&.Mui-selected": {
+                    backgroundColor: "rgba(124,77,255,0.15)",
+                    "&:hover": { backgroundColor: "rgba(124,77,255,0.25)" },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    color:
+                      location.pathname === item.path
+                        ? "primary.main"
+                        : "grey.500",
+                    minWidth: 40,
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontSize: "0.9rem",
+                    fontWeight: location.pathname === item.path ? 600 : 400,
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
 
         {/* Logout */}
         <Box sx={{ mt: "auto", p: 1 }}>
