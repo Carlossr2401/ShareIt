@@ -1,6 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import pkg from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import dotenv from "dotenv";
+
+// Support both ESM named exports and CommonJS/default exports from @prisma/client
+const PrismaClient = pkg?.PrismaClient ?? pkg?.default?.PrismaClient ?? pkg;
 
 dotenv.config();
 
