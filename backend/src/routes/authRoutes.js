@@ -1,5 +1,5 @@
 import express from "express";
-import { signup, login, logout } from "../controllers/authController.js";
+import { signup, login, logout, getMe, topUpWallet } from "../controllers/authController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -92,8 +92,30 @@ router.post("/logout", logout);
  *       401:
  *         description: No autorizado
  */
-router.get("/me", requireAuth, (req, res) => {
-  res.status(200).json({ user: req.user });
-});
+router.get("/me", requireAuth, getMe);
 
+/**
+ * @swagger
+ * /auth/topup:
+ *   post:
+ *     summary: Realizar una recarga de saldo en la cartera (Wallet)
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *          description: Recarga realizada con éxito, devuelve el perfil actualizado
+ *          content:
+ *            application/json:
+ *            schema:
+ *            type: object
+ *              properties:
+ *                id:
+ *                type: string
+ *                wallet:
+ *                type: number
+ *       401:
+ *          description: No autorizado
+ *       500:
+ *          description: Error al procesar la recarga
+ */
+router.post("/topup", requireAuth, topUpWallet);
 export default router;

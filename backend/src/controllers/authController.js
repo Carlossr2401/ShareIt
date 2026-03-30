@@ -75,11 +75,10 @@ export const signup = async (req, res, next) => {
       return res.status(400).json({ error: error.message });
     }
 
-    // Crear entrada en la tabla 'profiles' usando Prisma
     if (data.user) {
       await prisma.profile.create({
         data: {
-          id: data.user.id, // Enlazamos con el ID de Supabase Auth
+          id: data.user.id,
           email: email,
           username: username,
           full_name: name || null,
@@ -162,5 +161,38 @@ export const logout = async (req, res, next) => {
     res.status(200).json({ message: "Sesión cerrada con éxito" });
   } catch (error) {
     next(error);
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: "Perfil no encontrado" });
+    }
+
+    res.status(200).json(profile);
+  } catch (error) {
+    console.error("Error en getMe:", error);
+    res.status(500).json({ error: "Error al obtener el perfil" });
+  }
+};
+
+export const topUpWallet = async (req, res) => {
+  try {
+    const profile = await prisma.profile.update({
+      where: { id: req.user.id },
+      data: {
+        wallet: {
+          increment: 20.00
+        }
+      }
+    });
+    res.status(200).json(profile);
+  } catch (error) {
+    res.status(500).json({ error: "No se pudo realizar la recarga" });
   }
 };

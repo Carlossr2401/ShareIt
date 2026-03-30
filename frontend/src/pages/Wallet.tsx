@@ -1,20 +1,11 @@
+import { useState, useEffect } from "react"; // Añadido
 import {
   Box, Typography, Card, CardContent, Button, Table, TableHead, TableRow,
-  TableCell, TableBody, TableContainer, Chip, Divider,
+  TableCell, TableBody, TableContainer, Chip, Divider, CircularProgress,
 } from "@mui/material";
 import { AccountBalanceWallet, Add, ArrowUpward, ArrowDownward } from "@mui/icons-material";
 import { useI18n } from "../context/I18nContext";
-
-const transactions = [
-  { id: 1, description: "Wallet Top-Up", amount: "+€20.00", type: "credit", date: "Mar 17, 2026" },
-  { id: 2, description: "Deposit — Conference Room A", amount: "-€2.00", type: "debit", date: "Mar 17, 2026" },
-  { id: 3, description: "Refund — Projector Epson #1", amount: "+€1.00", type: "refund", date: "Mar 16, 2026" },
-  { id: 4, description: "Deposit — Laptop Dell #7", amount: "-€1.50", type: "debit", date: "Mar 16, 2026" },
-  { id: 5, description: "Deposit — Van Mercedes", amount: "-€5.00", type: "debit", date: "Mar 15, 2026" },
-  { id: 6, description: "Refund — Van Mercedes", amount: "+€5.00", type: "refund", date: "Mar 15, 2026" },
-  { id: 7, description: "Wallet Top-Up", amount: "+€30.00", type: "credit", date: "Mar 14, 2026" },
-  { id: 8, description: "Deposit — Classroom 101 (forfeited)", amount: "-€3.00", type: "debit", date: "Mar 12, 2026" },
-];
+import axios from "axios"; // Asegúrate de tener axios instalado
 
 const typeConfig: Record<string, { bg: string; color: string; icon: React.ReactNode }> = {
   credit: { bg: "rgba(105,240,174,0.12)", color: "#69F0AE", icon: <ArrowDownward fontSize="small" /> },
@@ -25,6 +16,55 @@ const typeKeys: Record<string, string> = { credit: "wallet.credit", debit: "wall
 
 export default function Wallet() {
   const { t } = useI18n();
+
+  const [balance, setBalance] = useState<number>(0);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [resProfile, resReservations] = await Promise.all([
+          axios.get("http://localhost:3000/auth/me", { withCredentials: true }),
+          axios.get("http://localhost:3000/reservations/me", { withCredentials: true })
+        ]);
+
+        const currentBalance = resProfile.data.wallet || 0;
+        setBalance(currentBalance);
+
+        const currentDebits = resReservations.data.map((res: any) => ({
+          id: res.reservation_id,
+          description: `Depósito — ${res.resource?.name || 'Recurso'}`,
+          amount: res.resource?.deposit || 0,
+          type: "debit",
+          date: new Date(res.date).toLocaleDateString()
+        }));
+
+        setHistory(currentDebits);
+      } catch (error) {
+        console.error("Error cargando Wallet:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const handleTopUp = async () => {
+    try {
+      const res = await axios.post("http://localhost:3000/auth/topup", {}, { withCredentials: true });
+      if (res.data) {
+        setBalance(res.data.wallet);
+        const newTx = { id: Date.now(), description: "Wallet Top-Up", amount: 20, type: "credit", date: "Hoy" };
+        setHistory(prev => [newTx, ...prev]);
+      }
+    } catch (error) {
+      alert("Error en la recarga");
+    }
+  };
+
+  const totalDeposited = history.filter(x => x.type === "debit").reduce((a, b) => a + b.amount, 0);
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>{t("wallet.title")}</Typography>
@@ -38,18 +78,24 @@ export default function Wallet() {
             </Box>
             <Box>
               <Typography variant="body2" color="grey.500">{t("wallet.balance")}</Typography>
-              <Typography variant="h3" fontWeight={700} sx={{ background: "linear-gradient(135deg, #B388FF, #00E5FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>€45.00</Typography>
+              {loading ? <CircularProgress size={20} /> : (
+                <Typography variant="h3" fontWeight={700} sx={{ background: "linear-gradient(135deg, #B388FF, #00E5FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  €{balance.toFixed(2)}
+                </Typography>
+              )}
             </Box>
           </Box>
-          <Button variant="contained" startIcon={<Add />} size="large" sx={{ background: "linear-gradient(135deg, #7C4DFF, #651FFF)", "&:hover": { background: "linear-gradient(135deg, #9C7CFF, #7C4DFF)" } }}>{t("wallet.topUp")}</Button>
+          <Button variant="contained" startIcon={<Add />} size="large" onClick={handleTopUp} sx={{ background: "linear-gradient(135deg, #7C4DFF, #651FFF)" }}>
+            {t("wallet.topUp")}
+          </Button>
         </CardContent>
       </Card>
 
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         {[
-          { label: t("wallet.totalDeposited"), value: "€11.50", color: "#FF5252" },
-          { label: t("wallet.totalRefunded"), value: "€6.00", color: "#00E5FF" },
-          { label: t("wallet.forfeited"), value: "€3.00", color: "#FFD740" },
+          { label: t("wallet.totalDeposited"), value: `€${totalDeposited.toFixed(2)}`, color: "#FF5252" },
+          { label: t("wallet.totalRefunded"), value: "€0.00", color: "#00E5FF" },
+          { label: t("wallet.forfeited"), value: "€0.00", color: "#FFD740" },
         ].map((s) => (
           <Card key={s.label} sx={{ flex: 1, minWidth: 160 }}>
             <CardContent sx={{ py: 2, "&:last-child": { pb: 2 } }}>
@@ -74,16 +120,18 @@ export default function Wallet() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {transactions.map((tx) => (
+                {history.map((tx) => (
                   <TableRow key={tx.id} sx={{ "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
                     <TableCell>{tx.description}</TableCell>
                     <TableCell>{tx.date}</TableCell>
                     <TableCell>
                       <Chip icon={typeConfig[tx.type].icon as React.ReactElement} label={t(typeKeys[tx.type])} size="small"
-                        sx={{ backgroundColor: typeConfig[tx.type].bg, color: typeConfig[tx.type].color, fontWeight: 600, "& .MuiChip-icon": { color: typeConfig[tx.type].color } }} />
+                        sx={{ backgroundColor: typeConfig[tx.type].bg, color: typeConfig[tx.type].color, fontWeight: 600 }} />
                     </TableCell>
                     <TableCell align="right">
-                      <Typography variant="body2" fontWeight={600} sx={{ color: tx.type === "debit" ? "#FF5252" : "#69F0AE" }}>{tx.amount}</Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ color: tx.type === "debit" ? "#FF5252" : "#69F0AE" }}>
+                        {tx.type === "debit" ? "-" : "+"}€{Number(tx.amount).toFixed(2)}
+                      </Typography>
                     </TableCell>
                   </TableRow>
                 ))}

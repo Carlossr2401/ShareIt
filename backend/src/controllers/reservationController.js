@@ -1,6 +1,5 @@
 import { prisma } from "../config/prismaClient.js";
 
-// Crear una reserva
 export const createReservation = async (req, res) => {
   const { resource_id, date, start_time, end_time } = req.body;
   const user_id = req.user.id;
@@ -10,45 +9,65 @@ export const createReservation = async (req, res) => {
   }
 
   try {
-    // Convertir a DateTime de Prisma
     const reservationDate = new Date(date);
     const reservationStartTime = new Date(`1970-01-01T${start_time}Z`);
     const reservationEndTime = new Date(`1970-01-01T${end_time}Z`);
 
-    // Validación básica de solapamiento
-    const overlappingReservations = await prisma.reservation.findMany({
-      where: {
-        resource_id,
-        date: reservationDate,
-        AND: [
-          { start_time: { lt: reservationEndTime } },
-          { end_time: { gt: reservationStartTime } }
-        ]
+    const result = await prisma.$transaction(async (tx) => {
+      
+      const resource = await tx.resource.findUnique({
+        where: { resource_id }
+      });
+
+      if (!resource) throw new Error("Recurso no encontrado");
+
+      const profile = await tx.profile.findUnique({
+        where: { id: user_id }
+      });
+
+      if (!profile || profile.wallet < resource.deposit) {
+        throw new Error("Saldo insuficiente en tu Wallet para realizar esta reserva");
       }
+
+      const overlapping = await tx.reservation.findMany({
+        where: {
+          resource_id,
+          date: reservationDate,
+          AND: [
+            { start_time: { lt: reservationEndTime } },
+            { end_time: { gt: reservationStartTime } }
+          ]
+        }
+      });
+
+      if (overlapping.length > 0) {
+        throw new Error("El recurso ya cuenta con una reserva en ese horario");
+      }
+
+      await tx.profile.update({
+        where: { id: user_id },
+        data: { wallet: { decrement: resource.deposit } }
+      });
+
+      return await tx.reservation.create({
+        data: {
+          resource_id,
+          user_id,
+          date: reservationDate,
+          start_time: reservationStartTime,
+          end_time: reservationEndTime
+        }
+      });
     });
 
-    if (overlappingReservations.length > 0) {
-      return res.status(400).json({ error: "El recurso ya cuenta con una reserva en ese horario" });
-    }
+    res.status(201).json(result);
 
-    const newReservation = await prisma.reservation.create({
-      data: {
-        resource_id,
-        user_id,
-        date: reservationDate,
-        start_time: reservationStartTime,
-        end_time: reservationEndTime
-      }
-    });
-
-    res.status(201).json(newReservation);
   } catch (error) {
-    console.error("Error al crear la reserva:", error);
-    res.status(500).json({ error: "No se pudo crear la reserva" });
+    console.error("Error en el proceso de reserva:", error.message);
+    res.status(400).json({ error: error.message || "No se pudo procesar la reserva" });
   }
 };
 
-// Obtener las reservas del usuario autenticado
 export const getUserReservations = async (req, res) => {
   const user_id = req.user.id;
 
@@ -71,37 +90,41 @@ export const getUserReservations = async (req, res) => {
   }
 };
 
-// Cancelar una reserva
 export const deleteReservation = async (req, res) => {
-  const { id } = req.params; // reservation_id
+  const { id } = req.params;
   const user_id = req.user.id;
 
   try {
-    // Validar que la reserva le pertenece al usuario
-    const reservation = await prisma.reservation.findUnique({
-      where: { reservation_id: id }
+    const result = await prisma.$transaction(async (tx) => {
+      const reservation = await tx.reservation.findUnique({
+        where: { reservation_id: id },
+        include: { resource: true }
+      });
+
+      if (!reservation) throw new Error("Reserva no encontrada");
+      if (reservation.user_id !== user_id) throw new Error("No tienes permiso para cancelar esta reserva");
+
+      await tx.profile.update({
+        where: { id: user_id },
+        data: {
+          wallet: {
+            increment: reservation.resource.deposit
+          }
+        }
+      });
+
+      return await tx.reservation.delete({
+        where: { reservation_id: id }
+      });
     });
 
-    if (!reservation) {
-      return res.status(404).json({ error: "Reserva no encontrada" });
-    }
-
-    if (reservation.user_id !== user_id) {
-      return res.status(403).json({ error: "No tienes permiso para cancelar esta reserva" });
-    }
-
-    await prisma.reservation.delete({
-      where: { reservation_id: id }
-    });
-
-    res.json({ message: "Reserva cancelada exitosamente" });
+    res.json({ message: "Reserva cancelada y depósito devuelto a tu Wallet" });
   } catch (error) {
-    console.error("Error al cancelar la reserva:", error);
-    res.status(500).json({ error: "No se pudo cancelar la reserva" });
+    console.error("Error al cancelar la reserva:", error.message);
+    res.status(400).json({ error: error.message || "No se pudo cancelar la reserva" });
   }
 };
 
-// Obtener todas las reservas (para admin)
 export const getAllReservations = async (req, res) => {
   try {
     const reservations = await prisma.reservation.findMany({

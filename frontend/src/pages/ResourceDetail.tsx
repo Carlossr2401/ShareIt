@@ -6,6 +6,11 @@ import {
 import { ArrowBack, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, CalendarMonth, AccessTime, CheckCircle } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
+import type { Prisma } from "../../../backend/node_modules/.prisma/client";
+
+type ResourceWithRelations = Prisma.ResourceGetPayload<{
+  include: { availabilities: true }
+}>;
 
 const typeIcons: Record<string, React.ReactNode> = {
   Room: <MeetingRoom fontSize="large" />, 
@@ -24,7 +29,7 @@ export default function ResourceDetail() {
   const { id } = useParams();
   const { t } = useI18n();
 
-  const [resource, setResource] = useState<any>(null);
+  const [resource, setResource] = useState<ResourceWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   
   // Form fields
@@ -59,8 +64,11 @@ export default function ResourceDetail() {
     setErrorStatus(null);
     setSuccessStatus(null);
 
-    const startTime = new Date(selectedSlot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
-    const endTime = new Date(selectedSlot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+    const formatTime = (isoString: string) => {
+      const d = new Date(isoString);
+      return d.getUTCHours().toString().padStart(2, '0') + ":" + 
+             d.getUTCMinutes().toString().padStart(2, '0') + ":00";
+  };
 
     try {
       const res = await fetch("http://localhost:3000/reservations", {
@@ -70,14 +78,15 @@ export default function ResourceDetail() {
         body: JSON.stringify({
           resource_id: id,
           date,
-          start_time: startTime + ":00",
-          end_time: endTime + ":00"
+          start_time: formatTime(selectedSlot.start_time),
+          end_time: formatTime(selectedSlot.end_time)
         })
       });
 
       if (res.ok) {
         setSuccessStatus("Reservation created successfully!");
-        setSelectedSlot(null);
+        //setSelectedSlot(null);
+        setTimeout(() => navigate("/reservations"), 1500);
       } else {
         const data = await res.json();
         setErrorStatus(data.error || "Error creating reservation");
