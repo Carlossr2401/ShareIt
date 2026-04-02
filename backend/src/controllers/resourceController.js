@@ -49,11 +49,11 @@ export const getResourceById = async (req, res) => {
         reservations: true
       }
     });
-    
+
     if (!resource) {
       return res.status(404).json({ error: "Recurso no encontrado" });
     }
-    
+
     res.json(resource);
   } catch (error) {
     console.error("Error al obtener el recurso:", error);
@@ -71,39 +71,47 @@ export const createResource = async (req, res) => {
   }
 
   try {
-    // 1. Parsear disponibilidades si vienen como JSON (en multipart vienen como string)
+    // 1. Parsear disponibilidades si vienen como JSON
     let parsedAvailabilities = [];
     if (availabilities) {
       parsedAvailabilities = typeof availabilities === 'string' ? JSON.parse(availabilities) : availabilities;
     }
 
-    // 2. Crear el recurso en la DB (primero para tener el ID)
+    // 2. Construir el objeto de datos base
+    const resourceData = {
+      name,
+      description,
+      location,
+      rules: rules ? (typeof rules === 'string' ? JSON.parse(rules) : rules) : [],
+      deposit: Number(deposit),
+      category,
+      owner_id: req.user.id,
+    };
+
+    // 3. Añadir availabilities SOLO si hay datos
+    if (parsedAvailabilities && parsedAvailabilities.length > 0) {
+      resourceData.availabilities = {
+        create: parsedAvailabilities.map(av => ({
+          day_of_week: av.day_of_week,
+          start_time: new Date(`1970-01-01T${av.start_time}Z`),
+          end_time: new Date(`1970-01-01T${av.end_time}Z`)
+        }))
+      };
+    }
+
+    // 4. Crear el recurso en la DB
     const newResource = await prisma.resource.create({
-      data: {
-        name,
-        description,
-        location,
-        rules: rules ? (typeof rules === 'string' ? JSON.parse(rules) : rules) : [],
-        deposit: Number(deposit),
-        category,
-        owner_id: req.user.id,
-        availabilities: parsedAvailabilities && parsedAvailabilities.length > 0 ? {
-          create: parsedAvailabilities.map(av => ({
-            day_of_week: av.day_of_week,
-            start_time: new Date(`1970-01-01T${av.start_time}Z`),
-            end_time: new Date(`1970-01-01T${av.end_time}Z`)
-          }))
-        } : undefined
-      },
+      data: resourceData,
       include: {
         availabilities: true
       }
     });
 
-    // 3. Si hay imágenes, subirlas a Supabase usando el ID del recurso
+
+    // 5. Si hay imágenes, subirlas a Supabase...
     if (req.files && req.files.length > 0) {
       const publicUrls = [];
-      
+
       for (let i = 0; i < req.files.length; i++) {
         const imageFile = req.files[i];
         const fileExt = imageFile.originalname.split('.').pop();
@@ -124,7 +132,7 @@ export const createResource = async (req, res) => {
           const { data: { publicUrl } } = supabase.storage
             .from('RessourcesImages')
             .getPublicUrl(filePath);
-          
+
           publicUrls.push(publicUrl);
         }
       }
@@ -135,11 +143,11 @@ export const createResource = async (req, res) => {
           where: { resource_id: newResource.resource_id },
           data: { photo_urls: publicUrls }
         });
-        
+
         newResource.photo_urls = publicUrls;
       }
     }
-    
+
     res.status(201).json(newResource);
   } catch (error) {
     console.error("Error al crear recurso:", error);
@@ -162,7 +170,7 @@ export const updateResource = async (req, res) => {
     // 1. Si hay nuevas imágenes, subirlas
     if (req.files && req.files.length > 0) {
       const publicUrls = [];
-      
+
       for (let i = 0; i < req.files.length; i++) {
         const imageFile = req.files[i];
         const fileExt = imageFile.originalname.split('.').pop();
@@ -180,7 +188,7 @@ export const updateResource = async (req, res) => {
           const { data: { publicUrl } } = supabase.storage
             .from('RessourcesImages')
             .getPublicUrl(filePath);
-          
+
           publicUrls.push(publicUrl);
         }
       }
@@ -262,7 +270,7 @@ export const addAvailability = async (req, res) => {
 
 // Eliminar disponibilidad de un recurso
 export const removeAvailability = async (req, res) => {
-  const { availability_id } = req.params; 
+  const { availability_id } = req.params;
 
   try {
     await prisma.availability.delete({
