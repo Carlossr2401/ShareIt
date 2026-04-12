@@ -42,6 +42,12 @@ export default function AdminResources() {
   const [availabilities, setAvailabilities] = useState([
     { day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }
   ]);
+  
+  // Smart Scheduler State
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [bulkStart, setBulkStart] = useState("09:00");
+  const [bulkEnd, setBulkEnd] = useState("18:00");
+  const [slotDuration, setSlotDuration] = useState(0); // 0 = Full Range, others in minutes
 
   const fetchResources = async () => {
     try {
@@ -174,6 +180,68 @@ export default function AdminResources() {
   const removeAvailabilityRow = (index: number) => {
     const updated = availabilities.filter((_, i) => i !== index);
     setAvailabilities(updated);
+  };
+
+  const toggleDay = (day: number) => {
+    setSelectedDays(prev => 
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+
+  const timeToMinutes = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const minutesToTime = (min: number) => {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`;
+  };
+
+  const applyBulkSchedule = () => {
+    if (selectedDays.length === 0) return;
+    
+    const startMin = timeToMinutes(bulkStart);
+    const endMin = timeToMinutes(bulkEnd);
+    
+    if (startMin >= endMin) {
+      alert("Start time must be before end time");
+      return;
+    }
+
+    const newSlots: any[] = [];
+    
+    selectedDays.forEach(day => {
+      if (slotDuration === 0) {
+        newSlots.push({
+          day_of_week: day,
+          start_time: `${bulkStart}:00`,
+          end_time: `${bulkEnd}:00`
+        });
+      } else {
+        let currentStart = startMin;
+        while (currentStart + slotDuration <= endMin) {
+          newSlots.push({
+            day_of_week: day,
+            start_time: minutesToTime(currentStart),
+            end_time: minutesToTime(currentStart + slotDuration)
+          });
+          currentStart += slotDuration;
+        }
+      }
+    });
+    
+    // Concatenate and sort by day
+    const combined = [...availabilities, ...newSlots].sort((a, b) => a.day_of_week - b.day_of_week);
+    setAvailabilities(combined);
+    setSelectedDays([]);
+  };
+
+  const setPreset = (type: "weekdays" | "weekend" | "all") => {
+    if (type === "weekdays") setSelectedDays([1, 2, 3, 4, 5]);
+    else if (type === "weekend") setSelectedDays([6, 0]);
+    else if (type === "all") setSelectedDays([1, 2, 3, 4, 5, 6, 0]);
   };
 
   const addRule = () => {
@@ -317,30 +385,68 @@ export default function AdminResources() {
 
           <Divider sx={{ my: 1 }} />
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>Availabilities</Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {availabilities.map((av, index) => (
-                <Grid container spacing={1} key={index} alignItems="center">
-                  <Grid size={3}>
-                    <TextField select fullWidth size="small" label="Day" value={av.day_of_week} onChange={(e) => updateAvailability(index, "day_of_week", Number(e.target.value))}>
-                      <MenuItem value={1}>Mon</MenuItem><MenuItem value={2}>Tue</MenuItem>
-                      <MenuItem value={3}>Wed</MenuItem><MenuItem value={4}>Thu</MenuItem>
-                      <MenuItem value={5}>Fri</MenuItem><MenuItem value={6}>Sat</MenuItem>
-                      <MenuItem value={0}>Sun</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid size={4}>
-                    <TextField fullWidth size="small" type="time" InputLabelProps={{ shrink: true }} value={av.start_time} onChange={(e) => updateAvailability(index, "start_time", e.target.value + ":00")} />
-                  </Grid>
-                  <Grid size={4}>
-                    <TextField fullWidth size="small" type="time" InputLabelProps={{ shrink: true }} value={av.end_time} onChange={(e) => updateAvailability(index, "end_time", e.target.value + ":00")} />
-                  </Grid>
-                  <Grid size={1}>
-                    <IconButton color="error" size="small" onClick={() => removeAvailabilityRow(index)}><Delete fontSize="inherit" /></IconButton>
-                  </Grid>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>Smart Scheduler</Typography>
+            <Box sx={{ p: 2, bgcolor: "rgba(124,77,255,0.05)", borderRadius: 3, border: "1px solid rgba(124,77,255,0.1)", mb: 3 }}>
+              <Typography variant="caption" sx={{ color: "grey.500", mb: 1, display: "block" }}>Select days & time range to add in bulk</Typography>
+              
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                {[
+                  { label: "M", val: 1 }, { label: "T", val: 2 }, { label: "W", val: 3 },
+                  { label: "T", val: 4 }, { label: "F", val: 5 }, { label: "S", val: 6 }, { label: "S", val: 0 }
+                ].map((d) => (
+                  <Chip
+                    key={d.val}
+                    label={d.label}
+                    onClick={() => toggleDay(d.val)}
+                    color={selectedDays.includes(d.val) ? "primary" : "default"}
+                    sx={{ width: 36, height: 36, "& .MuiChip-label": { px: 0, fontWeight: 700 } }}
+                    variant={selectedDays.includes(d.val) ? "filled" : "outlined"}
+                  />
+                ))}
+              </Box>
+
+              <Grid container spacing={2} alignItems="center">
+                <Grid size={3}>
+                  <TextField fullWidth size="small" type="time" label="Start" InputLabelProps={{ shrink: true }} value={bulkStart} onChange={(e) => setBulkStart(e.target.value)} />
                 </Grid>
-              ))}
-              <Button variant="text" size="small" startIcon={<Add />} onClick={addAvailabilityRow} sx={{ alignSelf: "flex-start", mt: 1 }}>Add Time Slot</Button>
+                <Grid size={3}>
+                  <TextField fullWidth size="small" type="time" label="End" InputLabelProps={{ shrink: true }} value={bulkEnd} onChange={(e) => setBulkEnd(e.target.value)} />
+                </Grid>
+                <Grid size={3}>
+                  <TextField select fullWidth size="small" label="Duration" value={slotDuration} onChange={(e) => setSlotDuration(Number(e.target.value))}>
+                    <MenuItem value={0}>Full Range</MenuItem>
+                    <MenuItem value={30}>30 mins</MenuItem>
+                    <MenuItem value={60}>1 hour</MenuItem>
+                    <MenuItem value={120}>2 hours</MenuItem>
+                    <MenuItem value={240}>4 hours</MenuItem>
+                  </TextField>
+                </Grid>
+                <Grid size={3}>
+                  <Button variant="contained" fullWidth size="small" onClick={applyBulkSchedule} disabled={selectedDays.length === 0} sx={{ height: 40, background: "linear-gradient(135deg, #7C4DFF, #651FFF)" }}>
+                    Apply
+                  </Button>
+                </Grid>
+              </Grid>
+
+              <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
+                <Button size="small" sx={{ color: "grey.500", fontSize: "0.7rem" }} onClick={() => setPreset("weekdays")}>Weekdays</Button>
+                <Button size="small" sx={{ color: "grey.500", fontSize: "0.7rem" }} onClick={() => setPreset("weekend")}>Weekend</Button>
+                <Button size="small" sx={{ color: "grey.500", fontSize: "0.7rem" }} onClick={() => setAvailabilities([])}>Clear All</Button>
+              </Box>
+            </Box>
+
+            <Typography variant="caption" sx={{ mb: 1, display: "block", color: "grey.500" }}>Current Schedule</Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, maxHeight: 200, overflowY: "auto", pr: 1 }}>
+              {availabilities.length > 0 ? availabilities.map((av, index) => (
+                <Box key={index} sx={{ display: "flex", gap: 1, alignItems: "center", p: 1, bgcolor: "rgba(255,255,255,0.02)", borderRadius: 1.5, border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <Chip label={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][av.day_of_week]} size="small" sx={{ minWidth: 50, fontWeight: 600, bgcolor: "rgba(0,229,255,0.1)", color: "#00E5FF" }} />
+                  <Typography variant="body2" sx={{ flex: 1, color: "grey.300" }}>{av.start_time.slice(0, 5)} - {av.end_time.slice(0, 5)}</Typography>
+                  <IconButton size="small" onClick={() => removeAvailabilityRow(index)} color="error"><Delete fontSize="inherit" /></IconButton>
+                </Box>
+              )) : (
+                <Typography variant="body2" color="grey.600" sx={{ fontStyle: "italic", textAlign: "center", py: 2 }}>No schedule set yet.</Typography>
+              )}
+              <Button variant="text" size="small" startIcon={<Add />} onClick={addAvailabilityRow} sx={{ mt: 1, color: "primary.light" }}>Add Manual Slot</Button>
             </Box>
           </Box>
 

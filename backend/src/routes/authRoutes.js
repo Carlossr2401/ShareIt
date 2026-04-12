@@ -102,20 +102,21 @@ router.get("/me", requireAuth, getMe);
  *     tags: [Auth]
  *     responses:
  *       200:
- *          description: Recarga realizada con éxito, devuelve el perfil actualizado
- *          content:
- *            application/json:
- *            schema:
- *            type: object
- *              properties:
- *                id:
- *                type: string
- *                wallet:
- *                type: number
+ *         description: Recarga realizada con éxito, devuelve el perfil actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 wallet:
+ *                   type: number
  *       401:
- *          description: No autorizado
+ *         description: No autorizado
  *       500:
- *          description: Error al procesar la recarga
+ *         description: Error al procesar la recarga
  */
 router.post("/topup", requireAuth, topUpWallet);
+
 export default router;
