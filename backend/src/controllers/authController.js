@@ -183,16 +183,23 @@ export const getMe = async (req, res) => {
 
 export const topUpWallet = async (req, res) => {
   try {
+    const { amount } = req.body;
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ error: "El importe debe ser un número positivo" });
+    }
+
     const profile = await prisma.profile.update({
       where: { id: req.user.id },
       data: {
         wallet: {
-          increment: 20.00
+          increment: parseFloat(amount)
         }
       }
     });
     res.status(200).json(profile);
   } catch (error) {
+    console.error("Error en topUpWallet:", error);
     res.status(500).json({ error: "No se pudo realizar la recarga" });
   }
 };

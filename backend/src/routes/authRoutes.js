@@ -100,18 +100,32 @@ router.get("/me", requireAuth, getMe);
  *   post:
  *     summary: Realizar una recarga de saldo en la cartera (Wallet)
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 description: Cantidad de dinero a añadir
  *     responses:
  *       200:
  *          description: Recarga realizada con éxito, devuelve el perfil actualizado
  *          content:
  *            application/json:
- *            schema:
- *            type: object
- *              properties:
- *                id:
- *                type: string
- *                wallet:
- *                type: number
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: string
+ *                  wallet:
+ *                    type: number
+ *       400:
+ *          description: Importe inválido
  *       401:
  *          description: No autorizado
  *       500:

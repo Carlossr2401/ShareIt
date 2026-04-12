@@ -127,6 +127,16 @@ const translations: Record<Lang, Record<string, string>> = {
     "wallet.credit": "Credit",
     "wallet.debit": "Debit",
     "wallet.refund": "Refund",
+    "wallet.topUpTitle": "Recharge Wallet",
+    "wallet.amountLabel": "Amount to add (€)",
+    "wallet.cardNumber": "Card Number",
+    "wallet.expiry": "Expiry Date (MM/YY)",
+    "wallet.cvv": "CVV",
+    "wallet.payButton": "Pay and Recharge",
+    "wallet.invalidAmount": "Please enter a valid amount",
+    "wallet.success": "Recharge successful!",
+    "wallet.processing": "Processing payment...",
+    "wallet.cancel": "Cancel",
 
     // Admin Resources
     "adminRes.title": "Manage Resources",
@@ -286,6 +296,16 @@ const translations: Record<Lang, Record<string, string>> = {
     "wallet.credit": "Crédito",
     "wallet.debit": "Débito",
     "wallet.refund": "Reembolso",
+    "wallet.topUpTitle": "Recargar Monedero",
+    "wallet.amountLabel": "Importe a añadir (€)",
+    "wallet.cardNumber": "Número de Tarjeta",
+    "wallet.expiry": "Fecha de Caducidad (MM/AA)",
+    "wallet.cvv": "CVV",
+    "wallet.payButton": "Pagar y Recargar",
+    "wallet.invalidAmount": "Por favor, introduce un importe válido",
+    "wallet.success": "¡Recarga realizada con éxito!",
+    "wallet.processing": "Procesando pago...",
+    "wallet.cancel": "Cancelar",
 
     // Admin Resources
     "adminRes.title": "Gestionar Recursos",
