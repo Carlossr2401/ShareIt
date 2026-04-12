@@ -81,8 +81,8 @@ export const signup = async (req, res, next) => {
           id: data.user.id,
           email: email,
           username: username,
-          full_name: name || null,
-          avatar_url: avatar_url || null,
+          fullName: name || null,
+          avatarUrl: avatar_url || null,
           bio: bio || null,
         },
       });

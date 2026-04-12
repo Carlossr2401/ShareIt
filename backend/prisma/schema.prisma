@@ -10,13 +10,13 @@ model Profile {
   id         String  @id @db.Uuid
   email      String  @unique // Para consultas rápidas desde el backend
   username   String  @unique
-  full_name  String?
-  avatar_url String?
+  fullName   String? @map("full_name")
+  avatarUrl  String? @map("avatar_url")
   bio        String?
   wallet     Float   @default(0)
 
-  updated_at DateTime @updatedAt
-  created_at DateTime @default(now())
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   reservations Reservation[]
 
@@ -25,20 +25,20 @@ model Profile {
 
 
 model Resource {
-  resource_id String   @id @default(uuid()) @db.Uuid
+  resourceId  String   @id @default(uuid()) @db.Uuid @map("resource_id")
   name        String
   description String?
   location    String?
-  photo_urls   String[]
+  photoUrls   String[] @map("photo_urls")
   rules       String[]
   deposit     Float?
   category    String?
-  owner_id    String?  @db.Uuid
+  ownerId     String?  @db.Uuid @map("owner_id")
 
-  is_archived Boolean @default(false)
+  isArchived  Boolean @default(false) @map("is_archived")
 
-  updated_at DateTime @updatedAt
-  created_at DateTime @default(now())
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   availabilities Availability[]
   reservations   Reservation[]
@@ -47,27 +47,27 @@ model Resource {
 }
 
 model Availability {
-  availability_id String   @id @default(uuid()) @db.Uuid
-  resource_id     String   @db.Uuid
-  day_of_week     Int // 0 = Sunday, 1 = Monday, etc.
-  start_time      DateTime @db.Time
-  end_time        DateTime @db.Time
+  availabilityId  String   @id @default(uuid()) @db.Uuid @map("availability_id")
+  resourceId      String   @db.Uuid @map("resource_id")
+  dayOfWeek       Int      @map("day_of_week") // 0 = Sunday, 1 = Monday, etc.
+  startTime       DateTime @db.Time @map("start_time")
+  endTime         DateTime @db.Time @map("end_time")
 
-  resource Resource @relation(fields: [resource_id], references: [resource_id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
 
   @@map("availabilities")
 }
 
 model Reservation {
-  reservation_id String   @id @default(uuid()) @db.Uuid
-  resource_id    String   @db.Uuid
-  user_id        String   @db.Uuid
-  date           DateTime @db.Date
-  start_time     DateTime @db.Time
-  end_time       DateTime @db.Time
+  reservationId String   @id @default(uuid()) @db.Uuid @map("reservation_id")
+  resourceId    String   @db.Uuid @map("resource_id")
+  userId        String   @db.Uuid @map("user_id")
+  date          DateTime @db.Date
+  startTime     DateTime @db.Time @map("start_time")
+  endTime       DateTime @db.Time @map("end_time")
 
-  resource Resource @relation(fields: [resource_id], references: [resource_id], onDelete: Cascade)
-  user     Profile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
+  user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
 }

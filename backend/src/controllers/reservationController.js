@@ -16,7 +16,7 @@ export const createReservation = async (req, res) => {
     const result = await prisma.$transaction(async (tx) => {
       
       const resource = await tx.resource.findUnique({
-        where: { resource_id }
+        where: { resourceId: resource_id }
       });
 
       if (!resource) throw new Error("Recurso no encontrado");
@@ -31,11 +31,11 @@ export const createReservation = async (req, res) => {
 
       const overlapping = await tx.reservation.findMany({
         where: {
-          resource_id,
+          resourceId: resource_id,
           date: reservationDate,
           AND: [
-            { start_time: { lt: reservationEndTime } },
-            { end_time: { gt: reservationStartTime } }
+            { startTime: { lt: reservationEndTime } },
+            { endTime: { gt: reservationStartTime } }
           ]
         }
       });
@@ -51,11 +51,11 @@ export const createReservation = async (req, res) => {
 
       return await tx.reservation.create({
         data: {
-          resource_id,
-          user_id,
+          resourceId: resource_id,
+          userId: user_id,
           date: reservationDate,
-          start_time: reservationStartTime,
-          end_time: reservationEndTime
+          startTime: reservationStartTime,
+          endTime: reservationEndTime
         }
       });
     });
@@ -73,13 +73,13 @@ export const getUserReservations = async (req, res) => {
 
   try {
     const reservations = await prisma.reservation.findMany({
-      where: { user_id },
+      where: { userId: user_id },
       include: {
         resource: true
       },
       orderBy: [
         { date: 'desc' },
-        { start_time: 'desc' }
+        { startTime: 'desc' }
       ]
     });
 
@@ -97,12 +97,12 @@ export const deleteReservation = async (req, res) => {
   try {
     const result = await prisma.$transaction(async (tx) => {
       const reservation = await tx.reservation.findUnique({
-        where: { reservation_id: id },
+        where: { reservationId: id },
         include: { resource: true }
       });
 
       if (!reservation) throw new Error("Reserva no encontrada");
-      if (reservation.user_id !== user_id) throw new Error("No tienes permiso para cancelar esta reserva");
+      if (reservation.userId !== user_id) throw new Error("No tienes permiso para cancelar esta reserva");
 
       await tx.profile.update({
         where: { id: user_id },
@@ -114,7 +114,7 @@ export const deleteReservation = async (req, res) => {
       });
 
       return await tx.reservation.delete({
-        where: { reservation_id: id }
+        where: { reservationId: id }
       });
     });
 
@@ -134,7 +134,7 @@ export const getAllReservations = async (req, res) => {
       },
       orderBy: [
         { date: 'desc' },
-        { start_time: 'desc' }
+        { startTime: 'desc' }
       ]
     });
 

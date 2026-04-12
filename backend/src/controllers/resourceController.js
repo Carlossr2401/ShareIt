@@ -13,7 +13,7 @@ export const getResources = async (req, res) => {
       include: {
         availabilities: true
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { createdAt: 'desc' }
     });
     res.json(resources);
   } catch (error) {
@@ -27,9 +27,9 @@ export const getMyResources = async (req, res) => {
   const user_id = req.user.id;
   try {
     const resources = await prisma.resource.findMany({
-      where: { owner_id: user_id },
+      where: { ownerId: user_id },
       include: { availabilities: true },
-      orderBy: { created_at: 'desc' }
+      orderBy: { createdAt: 'desc' }
     });
     res.json(resources);
   } catch (error) {
@@ -43,7 +43,7 @@ export const getResourceById = async (req, res) => {
   const { id } = req.params;
   try {
     const resource = await prisma.resource.findUnique({
-      where: { resource_id: id },
+      where: { resourceId: id },
       include: {
         availabilities: true,
         reservations: true
@@ -86,12 +86,12 @@ export const createResource = async (req, res) => {
         rules: rules ? (typeof rules === 'string' ? JSON.parse(rules) : rules) : [],
         deposit: Number(deposit),
         category,
-        owner_id: req.user.id,
+        ownerId: req.user.id,
         availabilities: parsedAvailabilities && parsedAvailabilities.length > 0 ? {
           create: parsedAvailabilities.map(av => ({
-            day_of_week: av.day_of_week,
-            start_time: new Date(`1970-01-01T${av.start_time}Z`),
-            end_time: new Date(`1970-01-01T${av.end_time}Z`)
+            dayOfWeek: av.day_of_week,
+            startTime: new Date(`1970-01-01T${av.start_time}Z`),
+            endTime: new Date(`1970-01-01T${av.end_time}Z`)
           }))
         } : undefined
       },
@@ -108,7 +108,7 @@ export const createResource = async (req, res) => {
         const imageFile = req.files[i];
         const fileExt = imageFile.originalname.split('.').pop();
         const fileName = `image_${Date.now()}_${i}.${fileExt}`;
-        const filePath = `${newResource.resource_id}/${fileName}`;
+        const filePath = `${newResource.resourceId}/${fileName}`;
 
         const { data, error } = await supabase.storage
           .from('RessourcesImages')
@@ -132,8 +132,8 @@ export const createResource = async (req, res) => {
       if (publicUrls.length > 0) {
         // Actualizar el recurso con el array de URLs
         await prisma.resource.update({
-          where: { resource_id: newResource.resource_id },
-          data: { photo_urls: publicUrls }
+          where: { resourceId: newResource.resourceId },
+          data: { photoUrls: publicUrls }
         });
         
         newResource.photo_urls = publicUrls;
@@ -150,14 +150,14 @@ export const createResource = async (req, res) => {
 // Actualizar un recurso
 export const updateResource = async (req, res) => {
   const { id } = req.params;
-  let { name, description, location, photo_urls, rules, deposit, category, is_archived } = req.body;
+  let { name, description, location, photoUrls, rules, deposit, category, isArchived } = req.body;
 
   try {
     // Si es una petición multipart (FormData), parseamos los campos necesarios
     if (rules && typeof rules === 'string') rules = JSON.parse(rules);
     if (deposit) deposit = Number(deposit);
-    if (is_archived === 'true') is_archived = true;
-    if (is_archived === 'false') is_archived = false;
+    if (isArchived === 'true') isArchived = true;
+    if (isArchived === 'false') isArchived = false;
 
     // 1. Si hay nuevas imágenes, subirlas
     if (req.files && req.files.length > 0) {
@@ -186,7 +186,7 @@ export const updateResource = async (req, res) => {
       }
 
       if (publicUrls.length > 0) {
-        photo_urls = publicUrls;
+        photoUrls = publicUrls;
       }
     }
 
@@ -194,14 +194,14 @@ export const updateResource = async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (location !== undefined) updateData.location = location;
-    if (photo_urls !== undefined) updateData.photo_urls = photo_urls;
+    if (photoUrls !== undefined) updateData.photoUrls = photoUrls;
     if (rules !== undefined) updateData.rules = rules;
     if (deposit !== undefined) updateData.deposit = deposit;
     if (category !== undefined) updateData.category = category;
-    if (is_archived !== undefined) updateData.is_archived = is_archived;
+    if (isArchived !== undefined) updateData.isArchived = isArchived;
 
     const updatedResource = await prisma.resource.update({
-      where: { resource_id: id },
+      where: { resourceId: id },
       data: updateData
     });
 
@@ -221,7 +221,7 @@ export const deleteResource = async (req, res) => {
 
   try {
     await prisma.resource.delete({
-      where: { resource_id: id }
+      where: { resourceId: id }
     });
 
     res.json({ message: "Recurso eliminado exitosamente" });
@@ -246,10 +246,10 @@ export const addAvailability = async (req, res) => {
   try {
     const newAvailability = await prisma.availability.create({
       data: {
-        resource_id: id,
-        day_of_week,
-        start_time: new Date(`1970-01-01T${start_time}Z`),
-        end_time: new Date(`1970-01-01T${end_time}Z`)
+        resourceId: id,
+        dayOfWeek: day_of_week,
+        startTime: new Date(`1970-01-01T${start_time}Z`),
+        endTime: new Date(`1970-01-01T${end_time}Z`)
       }
     });
 
@@ -266,7 +266,7 @@ export const removeAvailability = async (req, res) => {
 
   try {
     await prisma.availability.delete({
-      where: { availability_id }
+      where: { availabilityId: availability_id }
     });
 
     res.json({ message: "Disponibilidad eliminada exitosamente" });
