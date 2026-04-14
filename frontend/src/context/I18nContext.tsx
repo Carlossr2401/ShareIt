@@ -91,6 +91,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "detail.rules": "Rules & Requirements",
     "detail.amenities": "Amenities",
     "detail.capacity": "Capacity",
+    "detail.confirmTitle": "Confirm Reservation",
+    "detail.resource": "Resource",
+    "detail.timeSlot": "Time Slot",
+    "detail.deposit": "Deposit",
+    "detail.cancel": "Cancel",
+    "detail.confirmBtn": "Confirm",
 
     // My Reservations
     "reservations.title": "My Reservations",
@@ -260,6 +266,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "detail.timeSlotsHint": "Selecciona una fecha arriba y luego elige una franja disponible.",
     "detail.amenities": "Equipamiento",
     "detail.capacity": "Capacidad",
+    "detail.confirmTitle": "Confirmar Reserva",
+    "detail.resource": "Recurso",
+    "detail.timeSlot": "Franja Horaria",
+    "detail.deposit": "Depósito",
+    "detail.cancel": "Cancelar",
+    "detail.confirmBtn": "Confirmar",
 
     // My Reservations
     "reservations.title": "Mis Reservas",

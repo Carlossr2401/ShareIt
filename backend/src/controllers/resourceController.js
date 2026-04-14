@@ -11,9 +11,9 @@ export const getResources = async (req, res) => {
   try {
     const resources = await prisma.resource.findMany({
       include: {
-        availabilities: true
+        availabilities: true,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
     res.json(resources);
   } catch (error) {
@@ -29,7 +29,7 @@ export const getMyResources = async (req, res) => {
     const resources = await prisma.resource.findMany({
       where: { ownerId: user_id },
       include: { availabilities: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
     res.json(resources);
   } catch (error) {
@@ -46,14 +46,14 @@ export const getResourceById = async (req, res) => {
       where: { resourceId: id },
       include: {
         availabilities: true,
-        reservations: true
-      }
+        reservations: true,
+      },
     });
-    
+
     if (!resource) {
       return res.status(404).json({ error: "Recurso no encontrado" });
     }
-    
+
     res.json(resource);
   } catch (error) {
     console.error("Error al obtener el recurso:", error);
@@ -63,7 +63,15 @@ export const getResourceById = async (req, res) => {
 
 // Crear un nuevo recurso con soporte para imágenes
 export const createResource = async (req, res) => {
-  const { name, description, location, rules, deposit, category, availabilities } = req.body;
+  const {
+    name,
+    description,
+    location,
+    rules,
+    deposit,
+    category,
+    availabilities,
+  } = req.body;
   const imageFile = req.file;
 
   if (!name) {
@@ -71,10 +79,13 @@ export const createResource = async (req, res) => {
   }
 
   try {
-    // 1. Parsear disponibilidades si vienen como JSON (en multipart vienen como string)
+    // 1. Parsear disponibilidades si vienen como JSON
     let parsedAvailabilities = [];
     if (availabilities) {
-      parsedAvailabilities = typeof availabilities === 'string' ? JSON.parse(availabilities) : availabilities;
+      parsedAvailabilities =
+        typeof availabilities === "string"
+          ? JSON.parse(availabilities)
+          : availabilities;
     }
 
     // 2. Crear el recurso en la DB (primero para tener el ID)
@@ -83,48 +94,58 @@ export const createResource = async (req, res) => {
         name,
         description,
         location,
-        rules: rules ? (typeof rules === 'string' ? JSON.parse(rules) : rules) : [],
+        rules: rules
+          ? typeof rules === "string"
+            ? JSON.parse(rules)
+            : rules
+          : [],
         deposit: Number(deposit),
         category,
         ownerId: req.user.id,
-        availabilities: parsedAvailabilities && parsedAvailabilities.length > 0 ? {
-          create: parsedAvailabilities.map(av => ({
-            dayOfWeek: av.day_of_week,
-            startTime: new Date(`1970-01-01T${av.start_time}Z`),
-            endTime: new Date(`1970-01-01T${av.end_time}Z`)
-          }))
-        } : undefined
+        availabilities:
+          parsedAvailabilities && parsedAvailabilities.length > 0
+            ? {
+                create: parsedAvailabilities.map((av) => ({
+                  dayOfWeek: av.day_of_week,
+                  startTime: new Date(`1970-01-01T${av.start_time}Z`),
+                  endTime: new Date(`1970-01-01T${av.end_time}Z`),
+                })),
+              }
+            : undefined,
       },
       include: {
-        availabilities: true
-      }
+        availabilities: true,
+      },
     });
 
-    // 3. Si hay imágenes, subirlas a Supabase usando el ID del recurso
+    // 5. Si hay imágenes, subirlas a Supabase...
     if (req.files && req.files.length > 0) {
       const publicUrls = [];
-      
+
       for (let i = 0; i < req.files.length; i++) {
         const imageFile = req.files[i];
-        const fileExt = imageFile.originalname.split('.').pop();
+        const fileExt = imageFile.originalname.split(".").pop();
         const fileName = `image_${Date.now()}_${i}.${fileExt}`;
         const filePath = `${newResource.resourceId}/${fileName}`;
 
         const { data, error } = await supabase.storage
-          .from('RessourcesImages')
+          .from("RessourcesImages")
           .upload(filePath, imageFile.buffer, {
             contentType: imageFile.mimetype,
-            upsert: true
+            upsert: true,
           });
 
         if (error) {
-          console.error(`Error subiendo imagen ${i} a Supabase Storage:`, error);
+          console.error(
+            `Error subiendo imagen ${i} a Supabase Storage:`,
+            error,
+          );
         } else {
           // Obtener URL pública
-          const { data: { publicUrl } } = supabase.storage
-            .from('RessourcesImages')
-            .getPublicUrl(filePath);
-          
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("RessourcesImages").getPublicUrl(filePath);
+
           publicUrls.push(publicUrl);
         }
       }
@@ -133,13 +154,13 @@ export const createResource = async (req, res) => {
         // Actualizar el recurso con el array de URLs
         await prisma.resource.update({
           where: { resourceId: newResource.resourceId },
-          data: { photoUrls: publicUrls }
+          data: { photoUrls: publicUrls },
         });
-        
+
         newResource.photoUrls = publicUrls;
       }
     }
-    
+
     res.status(201).json(newResource);
   } catch (error) {
     console.error("Error al crear recurso:", error);
@@ -150,37 +171,46 @@ export const createResource = async (req, res) => {
 // Actualizar un recurso
 export const updateResource = async (req, res) => {
   const { id } = req.params;
-  let { name, description, location, photoUrls, rules, deposit, category, isArchived } = req.body;
+  let {
+    name,
+    description,
+    location,
+    photoUrls,
+    rules,
+    deposit,
+    category,
+    isArchived,
+  } = req.body;
 
   try {
     // Si es una petición multipart (FormData), parseamos los campos necesarios
-    if (rules && typeof rules === 'string') rules = JSON.parse(rules);
+    if (rules && typeof rules === "string") rules = JSON.parse(rules);
     if (deposit) deposit = Number(deposit);
-    if (isArchived === 'true') isArchived = true;
-    if (isArchived === 'false') isArchived = false;
+    if (isArchived === "true") isArchived = true;
+    if (isArchived === "false") isArchived = false;
 
     // 1. Si hay nuevas imágenes, subirlas
     if (req.files && req.files.length > 0) {
       const publicUrls = [];
-      
+
       for (let i = 0; i < req.files.length; i++) {
         const imageFile = req.files[i];
-        const fileExt = imageFile.originalname.split('.').pop();
+        const fileExt = imageFile.originalname.split(".").pop();
         const fileName = `image_${Date.now()}_${i}.${fileExt}`;
         const filePath = `${id}/${fileName}`;
 
         const { data, error } = await supabase.storage
-          .from('RessourcesImages')
+          .from("RessourcesImages")
           .upload(filePath, imageFile.buffer, {
             contentType: imageFile.mimetype,
-            upsert: true
+            upsert: true,
           });
 
         if (!error) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('RessourcesImages')
-            .getPublicUrl(filePath);
-          
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("RessourcesImages").getPublicUrl(filePath);
+
           publicUrls.push(publicUrl);
         }
       }
@@ -202,12 +232,12 @@ export const updateResource = async (req, res) => {
 
     const updatedResource = await prisma.resource.update({
       where: { resourceId: id },
-      data: updateData
+      data: updateData,
     });
 
     res.json(updatedResource);
   } catch (error) {
-    if (error.code === 'P2025') {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Recurso no encontrado" });
     }
     console.error("Error al actualizar recurso:", error);
@@ -221,12 +251,12 @@ export const deleteResource = async (req, res) => {
 
   try {
     await prisma.resource.delete({
-      where: { resourceId: id }
+      where: { resourceId: id },
     });
 
     res.json({ message: "Recurso eliminado exitosamente" });
   } catch (error) {
-    if (error.code === 'P2025') {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Recurso no encontrado" });
     }
     console.error("Error al eliminar recurso:", error);
@@ -240,7 +270,9 @@ export const addAvailability = async (req, res) => {
   const { day_of_week, start_time, end_time } = req.body;
 
   if (day_of_week === undefined || !start_time || !end_time) {
-    return res.status(400).json({ error: "day_of_week, start_time y end_time son obligatorios" });
+    return res
+      .status(400)
+      .json({ error: "day_of_week, start_time y end_time son obligatorios" });
   }
 
   try {
@@ -249,8 +281,8 @@ export const addAvailability = async (req, res) => {
         resourceId: id,
         dayOfWeek: day_of_week,
         startTime: new Date(`1970-01-01T${start_time}Z`),
-        endTime: new Date(`1970-01-01T${end_time}Z`)
-      }
+        endTime: new Date(`1970-01-01T${end_time}Z`),
+      },
     });
 
     res.status(201).json(newAvailability);
@@ -262,16 +294,16 @@ export const addAvailability = async (req, res) => {
 
 // Eliminar disponibilidad de un recurso
 export const removeAvailability = async (req, res) => {
-  const { availability_id } = req.params; 
+  const { availability_id } = req.params;
 
   try {
     await prisma.availability.delete({
-      where: { availabilityId: availability_id }
+      where: { availabilityId: availability_id },
     });
 
     res.json({ message: "Disponibilidad eliminada exitosamente" });
   } catch (error) {
-    if (error.code === 'P2025') {
+    if (error.code === "P2025") {
       return res.status(404).json({ error: "Disponibilidad no encontrada" });
     }
     console.error("Error al eliminar disponibilidad:", error);

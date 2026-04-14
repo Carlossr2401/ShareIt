@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import {
   Box, Typography, Card, CardContent, Button, Chip,
-  Divider, CircularProgress, Alert, Paper, Grid
+  Divider, CircularProgress, Alert, Paper, Grid,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
 import { ArrowBack, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, CalendarMonth, AccessTime, CheckCircle } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
@@ -37,6 +38,7 @@ export default function ResourceDetail() {
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [successStatus, setSuccessStatus] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     const fetchResource = async () => {
@@ -278,7 +280,7 @@ export default function ResourceDetail() {
                 size="large" 
                 disabled={!selectedSlot}
                 startIcon={<CheckCircle />} 
-                onClick={handleBook}
+                onClick={() => setConfirmOpen(true)}
                 sx={{ 
                   py: 1.8, 
                   borderRadius: 3,
@@ -291,6 +293,77 @@ export default function ResourceDetail() {
               >
                 {t("detail.confirm") || "Book Now"}
               </Button>
+
+              {/* Confirmation Dialog */}
+              <Dialog
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                PaperProps={{
+                  sx: {
+                    borderRadius: 4,
+                    minWidth: 380,
+                    background: "linear-gradient(180deg, #1E1E2F 0%, #15151F 100%)",
+                    border: "1px solid rgba(124,77,255,0.2)",
+                  }
+                }}
+              >
+                <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, pb: 1 }}>
+                  <CheckCircle sx={{ color: "#7C4DFF" }} />
+                  {t("detail.confirmTitle") || "Confirm Reservation"}
+                </DialogTitle>
+                <DialogContent>
+                  <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.06)" }} />
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2" color="grey.500">{t("detail.resource") || "Resource"}</Typography>
+                      <Typography variant="body2" fontWeight={600}>{resource.name}</Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2" color="grey.500">{t("detail.date") || "Date"}</Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        {new Date(date).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
+                      </Typography>
+                    </Box>
+                    {selectedSlot && (
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2" color="grey.500">{t("detail.timeSlot") || "Time Slot"}</Typography>
+                        <Typography variant="body2" fontWeight={600}>
+                          {new Date(selectedSlot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+                          {" - "}
+                          {new Date(selectedSlot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+                        </Typography>
+                      </Box>
+                    )}
+                    <Divider sx={{ borderColor: "rgba(255,255,255,0.06)" }} />
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body1" fontWeight={600}>{t("detail.deposit") || "Deposit"}</Typography>
+                      <Typography variant="body1" fontWeight={700} sx={{ color: "#69F0AE" }}>€{resource.deposit || 0}</Typography>
+                    </Box>
+                  </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+                  <Button
+                    onClick={() => setConfirmOpen(false)}
+                    variant="outlined"
+                    sx={{ borderRadius: 2, borderColor: "rgba(255,255,255,0.15)", color: "grey.400", flex: 1 }}
+                  >
+                    {t("detail.cancel") || "Cancel"}
+                  </Button>
+                  <Button
+                    onClick={() => { setConfirmOpen(false); handleBook(); }}
+                    variant="contained"
+                    startIcon={<CheckCircle />}
+                    sx={{
+                      borderRadius: 2,
+                      flex: 1,
+                      background: "linear-gradient(135deg, #7C4DFF, #651FFF)",
+                      "&:hover": { background: "linear-gradient(135deg, #9C7CFF, #7C4DFF)" },
+                    }}
+                  >
+                    {t("detail.confirmBtn") || "Confirm"}
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </CardContent>
           </Card>
         </Grid>
