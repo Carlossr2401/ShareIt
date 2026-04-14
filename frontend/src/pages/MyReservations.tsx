@@ -80,18 +80,18 @@ export default function MyReservations() {
                   const rDeposit = r.resource?.deposit || 0;
                   
                   const dateStr = new Date(r.date).toLocaleDateString();
-                  const startStr = new Date(r.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-                  const endStr = new Date(r.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+                  const startStr = new Date(r.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+                  const endStr = new Date(r.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
                   return (
-                    <TableRow key={r.reservation_id} sx={{ "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
+                    <TableRow key={r.reservationId} sx={{ "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
                       <TableCell><Box sx={{ display: "flex", alignItems: "center", gap: 1 }}><EventNote sx={{ color: "primary.main", fontSize: 20 }} />{rName}</Box></TableCell>
                       <TableCell>{dateStr}</TableCell>
                       <TableCell>{startStr}</TableCell>
                       <TableCell>{endStr}</TableCell>
                       <TableCell>€{rDeposit}</TableCell>
                       <TableCell>
-                        <Tooltip title="Cancel Booking"><IconButton size="small" onClick={() => handleCancel(r.reservation_id)} sx={{ color: "error.main" }}><Delete fontSize="small" /></IconButton></Tooltip>
+                        <Tooltip title="Cancel Booking"><IconButton size="small" onClick={() => handleCancel(r.reservationId)} sx={{ color: "error.main" }}><Delete fontSize="small" /></IconButton></Tooltip>
                       </TableCell>
                     </TableRow>
                   );

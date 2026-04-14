@@ -185,7 +185,7 @@ export default function Dashboard() {
               ) : (
                 recentReservations.map((res, i) => (
                   <Box 
-                    key={res.reservation_id || i} 
+                    key={res.reservationId || i} 
                     sx={{ 
                       display: "flex", 
                       justifyContent: "space-between", 
@@ -199,7 +199,7 @@ export default function Dashboard() {
                         {res.resource?.name || "Recurso"}
                       </Typography>
                       <Typography variant="body2" color="grey.500">
-                        {new Date(res.date).toLocaleDateString()} · {new Date(res.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(res.date).toLocaleDateString()} · {new Date(res.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Typography>
                     </Box>
                     <Chip 

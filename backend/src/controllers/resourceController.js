@@ -136,7 +136,7 @@ export const createResource = async (req, res) => {
           data: { photoUrls: publicUrls }
         });
         
-        newResource.photo_urls = publicUrls;
+        newResource.photoUrls = publicUrls;
       }
     }
     

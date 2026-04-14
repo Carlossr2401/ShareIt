@@ -94,7 +94,7 @@ export default function Wallet() {
       setBalance(currentBalance);
 
       const currentDebits = resReservations.data.map((res: any) => ({
-        id: res.reservation_id,
+        id: res.reservationId,
         description: `Depósito — ${res.resource?.name || "Recurso"}`,
         amount: res.resource?.deposit || 0,
         type: "debit",

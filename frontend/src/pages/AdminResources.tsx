@@ -70,7 +70,7 @@ export default function AdminResources() {
 
   const handleOpenDialog = (resource: any = null) => {
     if (resource) {
-      setEditId(resource.resource_id);
+      setEditId(resource.resourceId);
       setFormData({
         name: resource.name,
         category: resource.category || "Room",
@@ -80,11 +80,11 @@ export default function AdminResources() {
         rules: resource.rules || [],
         images: []
       });
-      setAvailabilities(resource.availabilities || [{ day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }]);
+      setAvailabilities(resource.availabilities || [{ dayOfWeek: 1, startTime: "09:00:00", endTime: "18:00:00" }]);
     } else {
       setEditId(null);
       setFormData({ name: "", category: "Room", location: "", deposit: 0, description: "", rules: [], images: [] });
-      setAvailabilities([{ day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }]);
+      setAvailabilities([{ dayOfWeek: 1, startTime: "09:00:00", endTime: "18:00:00" }]);
     }
     setDialogOpen(true);
   };
@@ -159,7 +159,7 @@ export default function AdminResources() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ is_archived: !currentArchived })
+        body: JSON.stringify({ isArchived: !currentArchived })
       });
       if (res.ok) fetchResources();
     } catch (error) {
@@ -214,28 +214,28 @@ export default function AdminResources() {
     
     selectedDays.forEach(day => {
       if (slotDuration === 0) {
-        newSlots.push({
-          day_of_week: day,
-          start_time: `${bulkStart}:00`,
-          end_time: `${bulkEnd}:00`
+            newSlots.push({
+              dayOfWeek: day,
+              startTime: `${bulkStart}:00`,
+              endTime: `${bulkEnd}:00`
+            });
+          } else {
+            let currentStart = startMin;
+            while (currentStart + slotDuration <= endMin) {
+              newSlots.push({
+                dayOfWeek: day,
+                startTime: minutesToTime(currentStart),
+                endTime: minutesToTime(currentStart + slotDuration)
+              });
+              currentStart += slotDuration;
+            }
+          }
         });
-      } else {
-        let currentStart = startMin;
-        while (currentStart + slotDuration <= endMin) {
-          newSlots.push({
-            day_of_week: day,
-            start_time: minutesToTime(currentStart),
-            end_time: minutesToTime(currentStart + slotDuration)
-          });
-          currentStart += slotDuration;
-        }
-      }
-    });
-    
-    // Concatenate and sort by day
-    const combined = [...availabilities, ...newSlots].sort((a, b) => a.day_of_week - b.day_of_week);
-    setAvailabilities(combined);
-    setSelectedDays([]);
+        
+        // Concatenate and sort by day
+        const combined = [...availabilities, ...newSlots].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+        setAvailabilities(combined);
+        setSelectedDays([]);
   };
 
   const setPreset = (type: "weekdays" | "weekend" | "all") => {
@@ -288,24 +288,24 @@ export default function AdminResources() {
                 {resources.map((r) => {
                   const rType = r.category || "Room";
                   return (
-                    <TableRow key={r.resource_id} sx={{ "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
+                    <TableRow key={r.resourceId} sx={{ "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
                       <TableCell><Box sx={{ display: "flex", alignItems: "center", gap: 1 }}><Box sx={{ color: typeColors[rType] || typeColors.Room }}>{typeIcons[rType] || typeIcons.Room}</Box>{r.name}</Box></TableCell>
                       <TableCell><Chip label={rType} size="small" variant="outlined" sx={{ borderColor: typeColors[rType] || typeColors.Room, color: typeColors[rType] || typeColors.Room }} /></TableCell>
                       <TableCell>{r.location}</TableCell>
                       <TableCell>€{r.deposit || 0}</TableCell>
-                      <TableCell><Chip label={!r.is_archived ? "Available" : "Archived"} size="small" sx={{ backgroundColor: !r.is_archived ? "rgba(105,240,174,0.12)" : "rgba(255,82,82,0.12)", color: !r.is_archived ? "#69F0AE" : "#FF5252", fontWeight: 600 }} /></TableCell>
+                      <TableCell><Chip label={!r.isArchived ? "Available" : "Archived"} size="small" sx={{ backgroundColor: !r.isArchived ? "rgba(105,240,174,0.12)" : "rgba(255,82,82,0.12)", color: !r.isArchived ? "#69F0AE" : "#FF5252", fontWeight: 600 }} /></TableCell>
                       <TableCell align="right">
                         <Tooltip title="Edit">
                           <IconButton size="small" color="primary" onClick={() => handleOpenDialog(r)}>
                             <Edit fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title={!r.is_archived ? "Archive" : "Unarchive"}>
-                          <IconButton size="small" sx={{ color: r.is_archived ? "success.main" : "warning.main" }} onClick={() => handleToggleArchive(r.resource_id, r.is_archived)}>
-                            {r.is_archived ? <Add fontSize="small" /> : <Delete fontSize="small" />}
+                        <Tooltip title={!r.isArchived ? "Archive" : "Unarchive"}>
+                          <IconButton size="small" sx={{ color: r.isArchived ? "success.main" : "warning.main" }} onClick={() => handleToggleArchive(r.resourceId, r.isArchived)}>
+                            {r.isArchived ? <Add fontSize="small" /> : <Delete fontSize="small" />}
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Permanently Delete"><IconButton size="small" sx={{ color: "error.main" }} onClick={() => handleDeleteResource(r.resource_id)}><Delete fontSize="small" /></IconButton></Tooltip>
+                        <Tooltip title="Permanently Delete"><IconButton size="small" sx={{ color: "error.main" }} onClick={() => handleDeleteResource(r.resourceId)}><Delete fontSize="small" /></IconButton></Tooltip>
                       </TableCell>
                     </TableRow>
                   )
@@ -439,8 +439,8 @@ export default function AdminResources() {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1, maxHeight: 200, overflowY: "auto", pr: 1 }}>
               {availabilities.length > 0 ? availabilities.map((av, index) => (
                 <Box key={index} sx={{ display: "flex", gap: 1, alignItems: "center", p: 1, bgcolor: "rgba(255,255,255,0.02)", borderRadius: 1.5, border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <Chip label={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][av.day_of_week]} size="small" sx={{ minWidth: 50, fontWeight: 600, bgcolor: "rgba(0,229,255,0.1)", color: "#00E5FF" }} />
-                  <Typography variant="body2" sx={{ flex: 1, color: "grey.300" }}>{av.start_time.slice(0, 5)} - {av.end_time.slice(0, 5)}</Typography>
+                  <Chip label={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][av.dayOfWeek]} size="small" sx={{ minWidth: 50, fontWeight: 600, bgcolor: "rgba(0,229,255,0.1)", color: "#00E5FF" }} />
+                  <Typography variant="body2" sx={{ flex: 1, color: "grey.300" }}>{av.startTime.slice(0, 5)} - {av.endTime.slice(0, 5)}</Typography>
                   <IconButton size="small" onClick={() => removeAvailabilityRow(index)} color="error"><Delete fontSize="inherit" /></IconButton>
                 </Box>
               )) : (

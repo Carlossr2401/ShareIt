@@ -76,10 +76,10 @@ export default function ResourceDetail() {
         headers: { "Content-Type": "application/json" },
         credentials: "include", 
         body: JSON.stringify({
-          resource_id: id,
+          resourceId: id,
           date,
-          start_time: formatTime(selectedSlot.start_time),
-          end_time: formatTime(selectedSlot.end_time)
+          startTime: formatTime(selectedSlot.startTime),
+          endTime: formatTime(selectedSlot.endTime)
         })
       });
 
@@ -103,7 +103,7 @@ export default function ResourceDetail() {
   const selectedDayOfWeek = new Date(date).getUTCDay();
 
   // Filter slots for the selected day of week
-  const availableSlots = resource.availabilities?.filter((slot: any) => slot.day_of_week === selectedDayOfWeek) || [];
+  const availableSlots = resource.availabilities?.filter((slot: any) => slot.dayOfWeek === selectedDayOfWeek) || [];
 
   return (
     <Box>
@@ -113,10 +113,10 @@ export default function ResourceDetail() {
         {/* Left: Resource Info */}
         <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ mb: 3 }}>
-            {resource.photo_urls && (
+            {resource.photoUrls && (
               <Box sx={{ bgcolor: "black", borderRadius: "12px 12px 0 0", overflow: "hidden" }}>
-                {Array.isArray(resource.photo_urls) ? (
-                  resource.photo_urls.length > 0 ? (
+                {Array.isArray(resource.photoUrls) ? (
+                  resource.photoUrls.length > 0 ? (
                     <Box sx={{ 
                       width: "100%", 
                       height: 400, 
@@ -126,7 +126,7 @@ export default function ResourceDetail() {
                       '&::-webkit-scrollbar': { height: '6px' },
                       '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '3px' }
                     }}>
-                      {resource.photo_urls.map((url: string, index: number) => (
+                      {resource.photoUrls.map((url: string, index: number) => (
                         <Box key={index} sx={{ flex: "0 0 auto", width: "100%", height: "100%" }}>
                           <img src={url} alt={`${resource.name} ${index}`} style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} />
                         </Box>
@@ -135,7 +135,7 @@ export default function ResourceDetail() {
                   ) : null
                 ) : (
                   <Box sx={{ width: "100%", height: 350 }}>
-                    <img src={resource.photo_urls} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={resource.photoUrls} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </Box>
                 )}
               </Box>
@@ -184,12 +184,12 @@ export default function ResourceDetail() {
             {availableSlots.length > 0 ? (
               <Grid container spacing={2}>
                 {availableSlots.map((slot: any) => {
-                  const startRaw = new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-                  const endRaw = new Date(slot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-                  const isActive = selectedSlot?.availability_id === slot.availability_id;
+                  const startRaw = new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+                  const endRaw = new Date(slot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+                  const isActive = selectedSlot?.availabilityId === slot.availabilityId;
 
                   return (
-                    <Grid size={{ xs: 12, sm: 6 }} key={slot.availability_id}>
+                    <Grid size={{ xs: 12, sm: 6 }} key={slot.availabilityId}>
                       <Button 
                         fullWidth 
                         variant={isActive ? "contained" : "outlined"} 
@@ -252,7 +252,7 @@ export default function ResourceDetail() {
                 <Typography variant="subtitle2" sx={{ mb: 1, color: "grey.400" }}>Step 2: Selected Slot</Typography>
                 {selectedSlot ? (
                   <Chip 
-                    label={`${new Date(selectedSlot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} - ${new Date(selectedSlot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}`} 
+                    label={`${new Date(selectedSlot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} - ${new Date(selectedSlot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}`} 
                     onDelete={() => setSelectedSlot(null)}
                     color="primary"
                     sx={{ width: "100%", py: 1, height: 'auto', borderRadius: 2, fontSize: "1rem" }}

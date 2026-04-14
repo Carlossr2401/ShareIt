@@ -69,16 +69,16 @@ export default function Resources() {
         {filtered.map((resource) => {
           const rType = resource.category || "Room";
           return (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={resource.resource_id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={resource.resourceId}>
               <Card sx={{ height: "100%", display: "flex", flexDirection: "column", transition: "transform 0.2s, box-shadow 0.2s", "&:hover": { transform: "translateY(-4px)", boxShadow: `0 8px 24px ${typeColors[rType]}22` } }}>
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
                     <Box sx={{ width: 48, height: 48, borderRadius: 2.5, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType]}18`, color: typeColors[rType], overflow: "hidden" }}>
-                      {resource.photo_urls ? (
-                        Array.isArray(resource.photo_urls) ? (
-                          resource.photo_urls[0] ? <img src={resource.photo_urls[0]} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : typeIcons[rType] || typeIcons.Room
+                      {resource.photoUrls ? (
+                        Array.isArray(resource.photoUrls) ? (
+                          resource.photoUrls[0] ? <img src={resource.photoUrls[0]} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : typeIcons[rType] || typeIcons.Room
                         ) : (
-                          <img src={resource.photo_urls} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <img src={resource.photoUrls} alt={resource.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         )
                       ) : (
                         typeIcons[rType] || typeIcons.Room
@@ -94,7 +94,7 @@ export default function Resources() {
                   </Box>
                 </CardContent>
                 <CardActions sx={{ px: 2, pb: 2 }}>
-                  <Button fullWidth variant="contained" startIcon={<Visibility />} onClick={() => navigate(`/resources/${resource.resource_id}`)}>
+                  <Button fullWidth variant="contained" startIcon={<Visibility />} onClick={() => navigate(`/resources/${resource.resourceId}`)}>
                     View & Book
                   </Button>
                 </CardActions>
