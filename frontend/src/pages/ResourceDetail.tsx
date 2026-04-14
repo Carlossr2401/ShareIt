@@ -168,6 +168,7 @@ export default function ResourceDetail() {
 
               <Box sx={{ display: "flex", gap: 2, mb: 1, flexWrap: "wrap" }}>
                 <Chip label={`Type: ${rType}`} variant="outlined" sx={{ borderColor: "#7C4DFF", color: "#7C4DFF" }} />
+                <Chip label={`Price: €${resource.price || 0}`} variant="outlined" sx={{ borderColor: "#651FFF", color: "#651FFF" }} />
                 <Chip label={`Deposit: €${resource.deposit || 0}`} variant="outlined" sx={{ borderColor: "#69F0AE", color: "#69F0AE" }} />
               </Box>
             </CardContent>
@@ -267,11 +268,20 @@ export default function ResourceDetail() {
               {errorStatus && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{errorStatus}</Alert>}
               {successStatus && <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>{successStatus}</Alert>}
 
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                <Typography variant="body2" color="grey.400">Rental Price (Non-refundable)</Typography>
+                <Typography variant="body1" fontWeight={600}>€{resource.price || 0}</Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                <Typography variant="body2" color="grey.400">Security Deposit (Refundable)</Typography>
+                <Typography variant="body1" fontWeight={600}>€{resource.deposit || 0}</Typography>
+              </Box>
+
               <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.06)" }} />
               
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-                <Typography variant="body1" color="grey.400">Total Deposit</Typography>
-                <Typography variant="h6" fontWeight={700} color="#69F0AE">€{resource.deposit || 0}</Typography>
+                <Typography variant="body1" color="grey.300">Total to Deduct</Typography>
+                <Typography variant="h6" fontWeight={700} color="#69F0AE">€{(resource.deposit || 0) + (resource.price || 0)}</Typography>
               </Box>
 
               <Button 
@@ -328,16 +338,25 @@ export default function ResourceDetail() {
                       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                         <Typography variant="body2" color="grey.500">{t("detail.timeSlot") || "Time Slot"}</Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {new Date(selectedSlot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+                          {new Date(selectedSlot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
                           {" - "}
-                          {new Date(selectedSlot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+                          {new Date(selectedSlot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
                         </Typography>
                       </Box>
                     )}
                     <Divider sx={{ borderColor: "rgba(255,255,255,0.06)" }} />
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography variant="body1" fontWeight={600}>{t("detail.deposit") || "Deposit"}</Typography>
-                      <Typography variant="body1" fontWeight={700} sx={{ color: "#69F0AE" }}>€{resource.deposit || 0}</Typography>
+                      <Typography variant="body2" color="grey.500">Rental Price (Non-refundable)</Typography>
+                      <Typography variant="body2" fontWeight={600}>€{resource.price || 0}</Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2" color="grey.500">Security Deposit (Refundable)</Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ color: "grey.300" }}>€{resource.deposit || 0}</Typography>
+                    </Box>
+                    <Divider sx={{ borderColor: "rgba(255,255,255,0.06)" }} />
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body1" fontWeight={700}>Total</Typography>
+                      <Typography variant="body1" fontWeight={800} sx={{ color: "#69F0AE" }}>€{(resource.price || 0) + (resource.deposit || 0)}</Typography>
                     </Box>
                   </Box>
                 </DialogContent>

@@ -69,7 +69,7 @@ export default function MyReservations() {
             <Table>
               <TableHead>
                 <TableRow>
-                  {["Resource", "Date", "Start Time", "End Time", "Deposit", "Actions"].map(h => (
+                  {["Resource", "Date", "Time Range", "Price", "Deposit", "Total", "Actions"].map(h => (
                     <TableCell key={h} sx={{ fontWeight: 600, color: "grey.400" }}>{h}</TableCell>
                   ))}
                 </TableRow>
@@ -78,6 +78,8 @@ export default function MyReservations() {
                 {reservations.map((r) => {
                   const rName = r.resource?.name || "Unknown Resource";
                   const rDeposit = r.resource?.deposit || 0;
+                  const rPrice = r.resource?.price || 0;
+                  const rTotal = rDeposit + rPrice;
                   
                   const dateStr = new Date(r.date).toLocaleDateString();
                   const startStr = new Date(r.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
@@ -87,9 +89,10 @@ export default function MyReservations() {
                     <TableRow key={r.reservationId} sx={{ "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
                       <TableCell><Box sx={{ display: "flex", alignItems: "center", gap: 1 }}><EventNote sx={{ color: "primary.main", fontSize: 20 }} />{rName}</Box></TableCell>
                       <TableCell>{dateStr}</TableCell>
-                      <TableCell>{startStr}</TableCell>
-                      <TableCell>{endStr}</TableCell>
+                      <TableCell>{startStr} - {endStr}</TableCell>
+                      <TableCell>€{rPrice}</TableCell>
                       <TableCell>€{rDeposit}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: "#69F0AE" }}>€{rTotal}</TableCell>
                       <TableCell>
                         <Tooltip title="Cancel Booking"><IconButton size="small" onClick={() => handleCancel(r.reservationId)} sx={{ color: "error.main" }}><Delete fontSize="small" /></IconButton></Tooltip>
                       </TableCell>

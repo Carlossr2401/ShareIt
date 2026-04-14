@@ -26,7 +26,9 @@ export const createReservation = async (req, res) => {
         where: { id: user_id },
       });
 
-      if (!profile || profile.wallet < resource.deposit) {
+      const totalPrice = (resource.deposit || 0) + (resource.price || 0);
+
+      if (!profile || profile.wallet < totalPrice) {
         throw new Error(
           "Saldo insuficiente en tu Wallet para realizar esta reserva",
         );
@@ -49,7 +51,7 @@ export const createReservation = async (req, res) => {
 
       await tx.profile.update({
         where: { id: user_id },
-        data: { wallet: { decrement: resource.deposit } },
+        data: { wallet: { decrement: (resource.deposit || 0) + (resource.price || 0) } },
       });
 
       return await tx.reservation.create({

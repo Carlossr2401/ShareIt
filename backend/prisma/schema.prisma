@@ -32,6 +32,7 @@ model Resource {
   photoUrls   String[] @map("photo_urls")
   rules       String[]
   deposit     Float?
+  price       Float    @default(0)
   category    String?
   ownerId     String?  @db.Uuid @map("owner_id")
 

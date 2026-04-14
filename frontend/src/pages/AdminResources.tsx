@@ -31,6 +31,7 @@ export default function AdminResources() {
     category: "Room",
     location: "",
     deposit: 0,
+    price: 0,
     description: "",
     rules: [] as string[],
     images: [] as File[]
@@ -40,7 +41,7 @@ export default function AdminResources() {
   const [newRule, setNewRule] = useState("");
 
   const [availabilities, setAvailabilities] = useState([
-    { day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }
+    { dayOfWeek: 1, startTime: "09:00:00", endTime: "18:00:00" }
   ]);
   
   // Smart Scheduler State
@@ -76,6 +77,7 @@ export default function AdminResources() {
         category: resource.category || "Room",
         location: resource.location || "",
         deposit: resource.deposit || 0,
+        price: resource.price || 0,
         description: resource.description || "",
         rules: resource.rules || [],
         images: []
@@ -83,7 +85,7 @@ export default function AdminResources() {
       setAvailabilities(resource.availabilities || [{ dayOfWeek: 1, startTime: "09:00:00", endTime: "18:00:00" }]);
     } else {
       setEditId(null);
-      setFormData({ name: "", category: "Room", location: "", deposit: 0, description: "", rules: [], images: [] });
+      setFormData({ name: "", category: "Room", location: "", deposit: 0, price: 0, description: "", rules: [], images: [] });
       setAvailabilities([{ dayOfWeek: 1, startTime: "09:00:00", endTime: "18:00:00" }]);
     }
     setDialogOpen(true);
@@ -98,6 +100,7 @@ export default function AdminResources() {
       formDataPayload.append("category", formData.category);
       formDataPayload.append("location", formData.location);
       formDataPayload.append("deposit", formData.deposit.toString());
+      formDataPayload.append("price", formData.price.toString());
       formDataPayload.append("description", formData.description);
       formDataPayload.append("rules", JSON.stringify(formData.rules));
       formDataPayload.append("availabilities", JSON.stringify(availabilities));
@@ -122,6 +125,7 @@ export default function AdminResources() {
           category: formData.category,
           location: formData.location,
           deposit: formData.deposit,
+          price: formData.price,
           description: formData.description,
           rules: formData.rules,
         })
@@ -168,7 +172,7 @@ export default function AdminResources() {
   };
 
   const addAvailabilityRow = () => {
-    setAvailabilities([...availabilities, { day_of_week: 1, start_time: "09:00:00", end_time: "18:00:00" }]);
+    setAvailabilities([...availabilities, { dayOfWeek: 1, startTime: "09:00:00", endTime: "18:00:00" }]);
   };
 
   const updateAvailability = (index: number, field: string, value: any) => {
@@ -292,7 +296,7 @@ export default function AdminResources() {
                       <TableCell><Box sx={{ display: "flex", alignItems: "center", gap: 1 }}><Box sx={{ color: typeColors[rType] || typeColors.Room }}>{typeIcons[rType] || typeIcons.Room}</Box>{r.name}</Box></TableCell>
                       <TableCell><Chip label={rType} size="small" variant="outlined" sx={{ borderColor: typeColors[rType] || typeColors.Room, color: typeColors[rType] || typeColors.Room }} /></TableCell>
                       <TableCell>{r.location}</TableCell>
-                      <TableCell>€{r.deposit || 0}</TableCell>
+                      <TableCell>€{r.price || 0} / €{r.deposit || 0}</TableCell>
                       <TableCell><Chip label={!r.isArchived ? "Available" : "Archived"} size="small" sx={{ backgroundColor: !r.isArchived ? "rgba(105,240,174,0.12)" : "rgba(255,82,82,0.12)", color: !r.isArchived ? "#69F0AE" : "#FF5252", fontWeight: 600 }} /></TableCell>
                       <TableCell align="right">
                         <Tooltip title="Edit">
@@ -335,8 +339,11 @@ export default function AdminResources() {
               <Grid size={6}>
                 <TextField fullWidth label="Location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} variant="filled" />
               </Grid>
-              <Grid size={12}>
-                <TextField fullWidth type="number" label="Deposit Fee (€)" value={formData.deposit} onChange={(e) => setFormData({ ...formData, deposit: Number(e.target.value) })} variant="filled" />
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth label="Security Deposit" type="number" value={formData.deposit} onChange={(e) => setFormData({ ...formData, deposit: Number(e.target.value) })} slotProps={{ input: { startAdornment: "€ " } }} variant="filled" />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth label="Rental Price" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} slotProps={{ input: { startAdornment: "€ " } }} variant="filled" />
               </Grid>
             </Grid>
           </Box>

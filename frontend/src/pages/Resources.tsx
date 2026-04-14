@@ -88,9 +88,10 @@ export default function Resources() {
                   </Box>
                   <Typography variant="h6" sx={{ mb: 0.5 }}>{resource.name}</Typography>
                   <Typography variant="body2" color="grey.500" sx={{ mb: 1 }}>{resource.location}</Typography>
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", mt: 1 }}>
                     <Chip label={rType} size="small" variant="outlined" sx={{ borderColor: typeColors[rType], color: typeColors[rType] }} />
-                    <Typography variant="body2" color="grey.400">Deposit: €{resource.deposit || 0}</Typography>
+                    <Typography variant="body2" color="primary.light" fontWeight={600}>€{resource.price || 0}</Typography>
+                    <Typography variant="caption" color="grey.500">(+€{resource.deposit || 0} deposit)</Typography>
                   </Box>
                 </CardContent>
                 <CardActions sx={{ px: 2, pb: 2 }}>

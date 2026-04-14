@@ -69,6 +69,7 @@ export const createResource = async (req, res) => {
     location,
     rules,
     deposit,
+    price,
     category,
     availabilities,
   } = req.body;
@@ -100,15 +101,16 @@ export const createResource = async (req, res) => {
             : rules
           : [],
         deposit: Number(deposit),
+        price: price ? Number(price) : 0,
         category,
         ownerId: req.user.id,
         availabilities:
           parsedAvailabilities && parsedAvailabilities.length > 0
             ? {
                 create: parsedAvailabilities.map((av) => ({
-                  dayOfWeek: av.day_of_week,
-                  startTime: new Date(`1970-01-01T${av.start_time}Z`),
-                  endTime: new Date(`1970-01-01T${av.end_time}Z`),
+                  dayOfWeek: av.dayOfWeek,
+                  startTime: new Date(`1970-01-01T${av.startTime}Z`),
+                  endTime: new Date(`1970-01-01T${av.endTime}Z`),
                 })),
               }
             : undefined,
@@ -178,6 +180,7 @@ export const updateResource = async (req, res) => {
     photoUrls,
     rules,
     deposit,
+    price,
     category,
     isArchived,
   } = req.body;
@@ -185,7 +188,8 @@ export const updateResource = async (req, res) => {
   try {
     // Si es una petición multipart (FormData), parseamos los campos necesarios
     if (rules && typeof rules === "string") rules = JSON.parse(rules);
-    if (deposit) deposit = Number(deposit);
+    if (deposit !== undefined) deposit = Number(deposit);
+    if (price !== undefined) price = Number(price);
     if (isArchived === "true") isArchived = true;
     if (isArchived === "false") isArchived = false;
 
@@ -227,6 +231,7 @@ export const updateResource = async (req, res) => {
     if (photoUrls !== undefined) updateData.photoUrls = photoUrls;
     if (rules !== undefined) updateData.rules = rules;
     if (deposit !== undefined) updateData.deposit = deposit;
+    if (price !== undefined) updateData.price = price;
     if (category !== undefined) updateData.category = category;
     if (isArchived !== undefined) updateData.isArchived = isArchived;
 
@@ -267,21 +272,21 @@ export const deleteResource = async (req, res) => {
 // Añadir disponibilidad a un recurso
 export const addAvailability = async (req, res) => {
   const { id } = req.params; // resource_id
-  const { day_of_week, start_time, end_time } = req.body;
+  const { dayOfWeek, startTime, endTime } = req.body;
 
-  if (day_of_week === undefined || !start_time || !end_time) {
+  if (dayOfWeek === undefined || !startTime || !endTime) {
     return res
       .status(400)
-      .json({ error: "day_of_week, start_time y end_time son obligatorios" });
+      .json({ error: "dayOfWeek, startTime y endTime son obligatorios" });
   }
 
   try {
     const newAvailability = await prisma.availability.create({
       data: {
         resourceId: id,
-        dayOfWeek: day_of_week,
-        startTime: new Date(`1970-01-01T${start_time}Z`),
-        endTime: new Date(`1970-01-01T${end_time}Z`),
+        dayOfWeek: dayOfWeek,
+        startTime: new Date(`1970-01-01T${startTime}Z`),
+        endTime: new Date(`1970-01-01T${endTime}Z`),
       },
     });
 
