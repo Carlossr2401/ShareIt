@@ -42,8 +42,10 @@ export default function App() {
         <Route path="/resources/:id" element={<ResourceDetail />} />
         <Route path="/reservations" element={<MyReservations />} />
         <Route path="/wallet" element={<Wallet />} />
+        <Route path="/my-listings" element={<AdminResources />} />
         <Route path="/admin/resources" element={<AdminResources />} />
         <Route path="/admin/reservations" element={<AdminReservations />} />
+
       </Route>
     </Routes>
   );

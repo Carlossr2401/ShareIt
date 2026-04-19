@@ -174,7 +174,10 @@ export const getMe = async (req, res) => {
       return res.status(404).json({ error: "Perfil no encontrado" });
     }
 
-    res.status(200).json(profile);
+    res.status(200).json({
+      ...profile,
+      role: req.user.app_metadata?.role || "user"
+    });
   } catch (error) {
     console.error("Error en getMe:", error);
     res.status(500).json({ error: "Error al obtener el perfil" });

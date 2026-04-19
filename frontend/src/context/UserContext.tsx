@@ -27,18 +27,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
-        const userData = data.user;
         
-        // Obtener datos del user_metadata de Supabase Auth
-        const metadata = userData?.user_metadata || {};
-        const name = metadata.name || metadata.username || userData?.email?.split('@')[0] || "Usuario";
+        // El backend devuelve el objeto Profile directamente desde Prisma
+        // Estructura: { id, email, username, fullName, avatarUrl, wallet, ... }
+        
+        const name = data.fullName || data.username || data.email?.split('@')[0] || "Usuario";
         setUserName(name);
         
-        if (metadata.avatar_url) {
-          setAvatarUrl(metadata.avatar_url);
+        if (data.avatarUrl) {
+          setAvatarUrl(data.avatarUrl);
         }
 
-        if (userData?.app_metadata?.role === "admin") {
+        // El rol de admin suele venir en app_metadata si lo consultáramos a Supabase,
+        // pero aquí podríamos verificarlo si el backend lo incluyera o si lo tenemos en el perfil.
+        // Por ahora mantenemos la lógica de verificación si existe userData (por compatibilidad o cambios futuros)
+        if (data.role === "admin" || data.app_metadata?.role === "admin") {
           setRole("admin");
         }
       } else {
