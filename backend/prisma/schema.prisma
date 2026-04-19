@@ -66,6 +66,9 @@ model Reservation {
   date          DateTime @db.Date
   startTime     DateTime @db.Time @map("start_time")
   endTime       DateTime @db.Time @map("end_time")
+  
+  paymentMethod String   @default("WALLET") @map("payment_method")
+  total_price   Float    @default(0) @map("total_amount")
 
   resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
   user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)

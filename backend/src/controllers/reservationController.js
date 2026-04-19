@@ -1,7 +1,7 @@
 import { prisma } from "../config/prismaClient.js";
 
 export const createReservation = async (req, res) => {
-  const { resourceId, date, startTime, endTime } = req.body;
+  const { resourceId, date, startTime, endTime, paymentMethod = "WALLET" } = req.body;
   const user_id = req.user.id;
 
   if (!resourceId || !date || !startTime || !endTime) {
@@ -28,10 +28,22 @@ export const createReservation = async (req, res) => {
 
       const totalPrice = (resource.deposit || 0) + (resource.price || 0);
 
-      if (!profile || profile.wallet < totalPrice) {
-        throw new Error(
-          "Saldo insuficiente en tu Wallet para realizar esta reserva",
-        );
+      // Si es pago con MONEDERO (WALLET), verificar saldo
+      if (paymentMethod === "WALLET") {
+        if (!profile || profile.wallet < totalPrice) {
+          throw new Error(
+            "Saldo insuficiente en tu Wallet para realizar esta reserva",
+          );
+        }
+
+        // Descontar del monedero
+        await tx.profile.update({
+          where: { id: user_id },
+          data: { wallet: { decrement: totalPrice } },
+        });
+      } else if (paymentMethod === "CARD") {
+        // Simulación de pago con tarjeta (siempre éxito en este MVP)
+        console.log(`Pago con tarjeta procesado: €${totalPrice} para el usuario ${user_id}`);
       }
 
       const overlapping = await tx.reservation.findMany({
@@ -49,11 +61,6 @@ export const createReservation = async (req, res) => {
         throw new Error("El recurso ya cuenta con una reserva en ese horario");
       }
 
-      await tx.profile.update({
-        where: { id: user_id },
-        data: { wallet: { decrement: (resource.deposit || 0) + (resource.price || 0) } },
-      });
-
       return await tx.reservation.create({
         data: {
           resourceId: resourceId,
@@ -61,6 +68,8 @@ export const createReservation = async (req, res) => {
           date: reservationDate,
           startTime: reservationStartTime,
           endTime: reservationEndTime,
+          paymentMethod: paymentMethod,
+          totalPrice: totalPrice
         },
       });
     });
