@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Box, Typography, Grid, Card, CardContent, CardActions, Button, Chip,
@@ -22,21 +23,47 @@ export default function Resources() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [resources, setResources] = useState<any[]>([]);
+  const [filterDate, setFilterDate] = useState("");
+  const [filterStartTime, setFilterStartTime] = useState("");
+  const [filterEndTime, setFilterEndTime] = useState("");
+
+  const fetchResources = async (applyTimeFilter = false) => {
+    try {
+      let url = "http://localhost:3000/resources";
+      if (applyTimeFilter && filterDate && filterStartTime && filterEndTime) {
+        const params = new URLSearchParams({
+          date: filterDate,
+          startTime: filterStartTime,
+          endTime: filterEndTime
+        });
+        url += `?${params.toString()}`;
+      }
+
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setResources(data);
+      }
+    } catch (error) {
+      console.error("Error fetching resources:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchResources = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/resources");
-        if (res.ok) {
-          const data = await res.json();
-          setResources(data);
-        }
-      } catch (error) {
-        console.error("Error fetching resources:", error);
-      }
-    };
     fetchResources();
   }, []);
+
+  const handleApplyFilter = () => {
+    fetchResources(true);
+  };
+
+  const handleClearFilter = () => {
+    setFilterDate("");
+    setFilterStartTime("");
+    setFilterEndTime("");
+    // Call with false manually since state updates are asynchronous
+    fetchResources(false);
+  };
 
   const filtered = resources.filter((r) => {
     const matchSearch = r.name.toLowerCase().includes(search.toLowerCase());
@@ -49,7 +76,7 @@ export default function Resources() {
       <Typography variant="h4" gutterBottom>{t("resources.title") || "Resources"}</Typography>
       <Typography variant="body1" color="grey.500" sx={{ mb: 3 }}>Browse and book available resources</Typography>
 
-      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+      <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
         <TextField placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} size="small" sx={{ minWidth: 260 }}
           InputProps={{ startAdornment: <InputAdornment position="start"><Search sx={{ color: "grey.600" }} /></InputAdornment> }} />
         <FormControl size="small" sx={{ minWidth: 150 }}>
@@ -63,6 +90,37 @@ export default function Resources() {
             <MenuItem value="Whiteboard">Whiteboard</MenuItem>
           </Select>
         </FormControl>
+      </Box>
+
+      {/* Date and Time Filters */}
+      <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: "wrap", alignItems: "center", backgroundColor: 'rgba(0, 0, 0, 0.02)', p: 2, borderRadius: 2 }}>
+        <Typography variant="body2" fontWeight={600} color="textSecondary" sx={{ mr: 1 }}>Filter Availability:</Typography>
+        <TextField type="date" label="Date" size="small" InputLabelProps={{ shrink: true }} value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Start Time</InputLabel>
+          <Select value={filterStartTime} label="Start Time" onChange={(e: SelectChangeEvent) => setFilterStartTime(e.target.value)}>
+            {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`).map((h) => (
+              <MenuItem key={h} value={h}>{h}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>End Time</InputLabel>
+          <Select value={filterEndTime} label="End Time" onChange={(e: SelectChangeEvent) => setFilterEndTime(e.target.value)}>
+            {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`).map((h) => (
+              <MenuItem key={h} value={h}>{h}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Button variant="contained" color="primary" onClick={handleApplyFilter} disabled={!filterDate || !filterStartTime || !filterEndTime}>
+          Apply Filter
+        </Button>
+        <Button variant="outlined" color="inherit" onClick={handleClearFilter} disabled={!filterDate && !filterStartTime && !filterEndTime}>
+          Clear
+        </Button>
       </Box>
 
       <Grid container spacing={3}>

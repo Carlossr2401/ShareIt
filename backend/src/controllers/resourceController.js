@@ -6,15 +6,87 @@ const storage = multer.memoryStorage();
 export const upload = multer({ storage });
 export const uploadImages = upload.array("images", 10);
 
+
 // Obtener todos los recursos con sus disponibilidades
 export const getResources = async (req, res) => {
   try {
-    const resources = await prisma.resource.findMany({
+    const { date, startTime, endTime } = req.query;
+    let where = {};
+
+    let requestedDate, reqStart, reqEnd, dayOfWeek;
+
+    if (date && startTime && endTime) {
+      const formattedStartTime = startTime.length === 5 ? `${startTime}:00` : startTime;
+      const formattedEndTime = endTime.length === 5 ? `${endTime}:00` : endTime;
+
+      reqStart = new Date(`1970-01-01T${formattedStartTime}Z`);
+      reqEnd = new Date(`1970-01-01T${formattedEndTime}Z`);
+      requestedDate = new Date(date);
+      dayOfWeek = requestedDate.getUTCDay(); // Usamos UTCDay por si la timezone afecta
+
+      where = {
+        OR: [
+          {
+            availabilities: {
+              none: {} // Recursos sin disponibilidad configurada == asume 24/7 disponible
+            }
+          },
+          {
+            availabilities: {
+              some: {
+                dayOfWeek: dayOfWeek,
+                startTime: { lt: reqEnd }, // Busca si AL MENOS se solapa. 
+                endTime: { gt: reqStart }, // La contigüidad real se revisa en JS
+              },
+            }
+          }
+        ],
+        reservations: {
+          none: {
+            date: requestedDate,
+            startTime: { lt: reqEnd },
+            endTime: { gt: reqStart },
+          },
+        },
+      };
+    }
+
+    let resources = await prisma.resource.findMany({
+      where,
       include: {
         availabilities: true,
       },
       orderBy: { createdAt: "desc" },
     });
+
+    // Validar en memoria que las horas estén completamente cubiertas si la db retorna bloques de 1 hora.
+    if (date && startTime && endTime) {
+      resources = resources.filter(resource => {
+        if (!resource.availabilities || resource.availabilities.length === 0) return true;
+
+        const dayAvails = resource.availabilities.filter(a =>
+          a.dayOfWeek === dayOfWeek &&
+          a.startTime.getTime() < reqEnd.getTime() &&
+          a.endTime.getTime() > reqStart.getTime()
+        );
+
+        if (dayAvails.length === 0) return false;
+
+        // Ordenar y fusionar los bloques de disponibilidad
+        dayAvails.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+        let currentCoverStart = reqStart.getTime();
+
+        for (const av of dayAvails) {
+          const avStart = av.startTime.getTime();
+          const avEnd = av.endTime.getTime();
+          if (avStart <= currentCoverStart && avEnd > currentCoverStart) {
+            currentCoverStart = avEnd;
+          }
+        }
+        return currentCoverStart >= reqEnd.getTime();
+      });
+    }
+
     res.json(resources);
   } catch (error) {
     console.error("Error al obtener recursos:", error);
@@ -107,12 +179,12 @@ export const createResource = async (req, res) => {
         availabilities:
           parsedAvailabilities && parsedAvailabilities.length > 0
             ? {
-                create: parsedAvailabilities.map((av) => ({
-                  dayOfWeek: av.dayOfWeek,
-                  startTime: new Date(`1970-01-01T${av.startTime}Z`),
-                  endTime: new Date(`1970-01-01T${av.endTime}Z`),
-                })),
-              }
+              create: parsedAvailabilities.map((av) => ({
+                dayOfWeek: av.dayOfWeek,
+                startTime: new Date(`1970-01-01T${av.startTime}Z`),
+                endTime: new Date(`1970-01-01T${av.endTime}Z`),
+              })),
+            }
             : undefined,
       },
       include: {
@@ -315,3 +387,4 @@ export const removeAvailability = async (req, res) => {
     res.status(500).json({ error: "No se pudo eliminar la disponibilidad" });
   }
 };
+
