@@ -7,11 +7,12 @@ import {
 } from "@mui/material";
 import { 
   Add, Edit, Delete, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, 
-  Inventory2, Search, NavigateNext, NavigateBefore, CheckCircle, PhotoCamera
+  Inventory2, Search, NavigateNext, NavigateBefore, CheckCircle, PhotoCamera,
+  CalendarMonth
 } from "@mui/icons-material";
 import { useI18n } from "../context/I18nContext";
 import { useUser } from "../context/UserContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const categories = [
   { id: "Room", label: "Room", icon: <MeetingRoom />, color: "#7C4DFF" },
@@ -69,6 +70,7 @@ export default function AdminResources() {
   const { t } = useI18n();
   const { role } = useUser();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isPersonalMode = location.pathname.includes("my-listings");
 
@@ -225,6 +227,7 @@ export default function AdminResources() {
           price: formData.price,
           description: formData.description,
           rules: formData.rules,
+          availabilities: availabilities,
         })
       });
 
@@ -598,6 +601,11 @@ export default function AdminResources() {
                         <TableCell><Chip label={!r.isArchived ? "Active" : "Archived"} size="small" sx={{ backgroundColor: !r.isArchived ? "rgba(105,240,174,0.1)" : "rgba(255,82,82,0.1)", color: !r.isArchived ? "#69F0AE" : "#FF5252", fontWeight: 700 }} /></TableCell>
                         <TableCell align="right">
                           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
+                            <Tooltip title="View Reservations">
+                              <IconButton size="small" onClick={() => navigate(`/resources/${r.resourceId}/reservations`)} sx={{ color: "info.main" }}>
+                                <CalendarMonth fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
                             <Tooltip title="Edit"><IconButton size="small" onClick={() => handleOpenDialog(r)} sx={{ color: "primary.main" }}><Edit fontSize="small" /></IconButton></Tooltip>
                             <Tooltip title={!r.isArchived ? "Archive" : "Unarchive"}><IconButton size="small" onClick={() => handleToggleArchive(r.resourceId, r.isArchived)} sx={{ color: r.isArchived ? "success.main" : "warning.main" }}>{r.isArchived ? <Add fontSize="small" /> : <Delete fontSize="small" />}</IconButton></Tooltip>
                             <Tooltip title="Delete Permanently"><IconButton size="small" sx={{ color: "error.main" }} onClick={() => handleDeleteResource(r.resourceId)}><Delete fontSize="small" /></IconButton></Tooltip>

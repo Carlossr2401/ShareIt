@@ -118,7 +118,11 @@ export const getResourceById = async (req, res) => {
       where: { resourceId: id },
       include: {
         availabilities: true,
-        reservations: true,
+        reservations: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
@@ -179,11 +183,20 @@ export const createResource = async (req, res) => {
         availabilities:
           parsedAvailabilities && parsedAvailabilities.length > 0
             ? {
-              create: parsedAvailabilities.map((av) => ({
-                dayOfWeek: av.dayOfWeek,
-                startTime: new Date(`1970-01-01T${av.startTime}Z`),
-                endTime: new Date(`1970-01-01T${av.endTime}Z`),
-              })),
+              create: parsedAvailabilities.map((av) => {
+                const startStr = typeof av.startTime === "string" && av.startTime.includes("T") 
+                  ? av.startTime 
+                  : `1970-01-01T${av.startTime}${av.startTime.length === 5 ? ":00" : ""}Z`;
+                const endStr = typeof av.endTime === "string" && av.endTime.includes("T") 
+                  ? av.endTime 
+                  : `1970-01-01T${av.endTime}${av.endTime.length === 5 ? ":00" : ""}Z`;
+                
+                return {
+                  dayOfWeek: av.dayOfWeek,
+                  startTime: new Date(startStr),
+                  endTime: new Date(endStr),
+                };
+              }),
             }
             : undefined,
       },
@@ -255,6 +268,7 @@ export const updateResource = async (req, res) => {
     price,
     category,
     isArchived,
+    availabilities,
   } = req.body;
 
   try {
@@ -264,6 +278,12 @@ export const updateResource = async (req, res) => {
     if (price !== undefined) price = Number(price);
     if (isArchived === "true") isArchived = true;
     if (isArchived === "false") isArchived = false;
+
+    // Parsear disponibilidades
+    let parsedAvailabilities = [];
+    if (availabilities) {
+      parsedAvailabilities = typeof availabilities === "string" ? JSON.parse(availabilities) : availabilities;
+    }
 
     // 1. Si hay nuevas imágenes, subirlas
     if (req.files && req.files.length > 0) {
@@ -306,6 +326,26 @@ export const updateResource = async (req, res) => {
     if (price !== undefined) updateData.price = price;
     if (category !== undefined) updateData.category = category;
     if (isArchived !== undefined) updateData.isArchived = isArchived;
+
+    if (parsedAvailabilities && parsedAvailabilities.length > 0) {
+      updateData.availabilities = {
+        deleteMany: {}, // Borramos las anteriores y creamos las nuevas (estrategia simple)
+        create: parsedAvailabilities.map((av) => {
+          const startStr = typeof av.startTime === "string" && av.startTime.includes("T") 
+            ? av.startTime 
+            : `1970-01-01T${av.startTime}${av.startTime.length === 5 ? ":00" : ""}Z`;
+          const endStr = typeof av.endTime === "string" && av.endTime.includes("T") 
+            ? av.endTime 
+            : `1970-01-01T${av.endTime}${av.endTime.length === 5 ? ":00" : ""}Z`;
+          
+          return {
+            dayOfWeek: av.dayOfWeek,
+            startTime: new Date(startStr),
+            endTime: new Date(endStr),
+          };
+        }),
+      };
+    }
 
     const updatedResource = await prisma.resource.update({
       where: { resourceId: id },

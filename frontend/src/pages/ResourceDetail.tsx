@@ -19,7 +19,7 @@ import dayjs from "dayjs";
 import { useUser } from "../context/UserContext";
 
 type ResourceWithRelations = Prisma.ResourceGetPayload<{
-  include: { availabilities: true }
+  include: { availabilities: true, reservations: true }
 }>;
 
 const typeIcons: Record<string, React.ReactNode> = {
@@ -131,6 +131,29 @@ export default function ResourceDetail() {
   const rType = resource.category || "Room";
   const selectedDayOfWeek = dayjs(date).day(); 
   const availableSlots = resource.availabilities?.filter((slot: any) => slot.dayOfWeek === selectedDayOfWeek) || [];
+
+  const isSlotBusy = (slot: any) => {
+    if (!resource.reservations) return false;
+    
+    const formatTimeOnly = (date: Date) => {
+        const d = new Date(date);
+        return d.getUTCHours().toString().padStart(2, '0') + ":" + 
+               d.getUTCMinutes().toString().padStart(2, '0');
+    };
+
+    const slotStart = formatTimeOnly(slot.startTime);
+    const slotEnd = formatTimeOnly(slot.endTime);
+
+    return resource.reservations.some((res: any) => {
+      const resDate = dayjs(res.date).format('YYYY-MM-DD');
+      if (resDate !== date) return false;
+      
+      const resStart = formatTimeOnly(res.startTime);
+      const resEnd = formatTimeOnly(res.endTime);
+
+      return (resStart < slotEnd) && (resEnd > slotStart);
+    });
+  };
 
   return (
     <Box>
@@ -293,6 +316,7 @@ export default function ResourceDetail() {
             <Box sx={{ p: 0, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
               <StaticDatePicker
                 displayStaticWrapperAs="desktop"
+                disablePast
                 value={dayjs(date)}
                 onChange={(newValue) => {
                   if (newValue) {
@@ -335,28 +359,35 @@ export default function ResourceDetail() {
                       const startRaw = new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
                       const endRaw = new Date(slot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
                       const isActive = selectedSlot?.availabilityId === slot.availabilityId;
+                      const isBusy = isSlotBusy(slot);
 
                       return (
                         <Grid size={{ xs: 6 }} key={slot.availabilityId}>
                           <Button 
                             fullWidth 
                             variant={isActive ? "contained" : "outlined"} 
-                            onClick={() => setSelectedSlot(slot)}
+                            onClick={() => !isBusy && setSelectedSlot(slot)}
+                            disabled={isBusy}
                             sx={{ 
                               py: 1.5, 
                               borderRadius: 3,
                               fontSize: "0.9rem",
                               fontWeight: 700,
-                              borderColor: isActive ? "primary.main" : "rgba(255,255,255,0.1)",
-                              background: isActive ? "linear-gradient(135deg, #7C4DFF, #651FFF)" : "transparent",
-                              color: isActive ? "white" : "grey.400",
+                              borderColor: isBusy ? "rgba(255,255,255,0.05)" : (isActive ? "primary.main" : "rgba(255,255,255,0.1)"),
+                              background: isBusy ? "rgba(255,255,255,0.02)" : (isActive ? "linear-gradient(135deg, #7C4DFF, #651FFF)" : "transparent"),
+                              color: isBusy ? "grey.700" : (isActive ? "white" : "grey.400"),
+                              textDecoration: isBusy ? "line-through" : "none",
                               "&:hover": {
-                                borderColor: "primary.main",
-                                backgroundColor: isActive ? undefined : "rgba(124,77,255,0.1)"
+                                borderColor: isBusy ? "rgba(255,255,255,0.05)" : "primary.main",
+                                backgroundColor: isBusy ? "rgba(255,255,255,0.02)" : (isActive ? undefined : "rgba(124,77,255,0.1)")
+                              },
+                              "&.Mui-disabled": {
+                                color: "grey.800",
+                                borderColor: "rgba(255,255,255,0.05)"
                               }
                             }}
                           >
-                            {startRaw} - {endRaw}
+                            {isBusy ? `Occupied (${startRaw})` : `${startRaw} - ${endRaw}`}
                           </Button>
                         </Grid>
                       );

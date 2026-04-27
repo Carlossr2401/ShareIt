@@ -12,6 +12,14 @@ export const createReservation = async (req, res) => {
 
   try {
     const reservationDate = new Date(date);
+    
+    // Validación de fecha pasada
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (reservationDate < today) {
+      return res.status(400).json({ error: "No se pueden realizar reservas en fechas pasadas" });
+    }
+
     const reservationStartTime = new Date(`1970-01-01T${startTime}Z`);
     const reservationEndTime = new Date(`1970-01-01T${endTime}Z`);
 
