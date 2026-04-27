@@ -3,12 +3,13 @@ import {
   Box, Typography, Card, CardContent, Button, Chip,
   Divider, CircularProgress, Alert, Paper, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  RadioGroup, FormControlLabel, Radio, Stack, Backdrop
+  RadioGroup, FormControlLabel, Radio, Stack, Backdrop, IconButton
 } from "@mui/material";
 import { 
   ArrowBack, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, 
   CalendarMonth, AccessTime, CheckCircle, AccountBalanceWallet, 
-  CreditCard, InfoOutlined, Payments
+  CreditCard, InfoOutlined, Payments, ChevronLeft, ChevronRight,
+  Fullscreen, Close
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
@@ -51,6 +52,10 @@ export default function ResourceDetail() {
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [successStatus, setSuccessStatus] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  
+  // Gallery states
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     const fetchResource = async () => {
@@ -136,32 +141,103 @@ export default function ResourceDetail() {
         <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ mb: 3, borderRadius: 5, overflow: "hidden", border: "1px solid rgba(255,255,255,0.05)" }}>
             {resource.photoUrls && (
-              <Box sx={{ bgcolor: "black", overflow: "hidden", position: "relative" }}>
-                {Array.isArray(resource.photoUrls) && resource.photoUrls.length > 0 ? (
-                    <Box sx={{ 
-                      width: "100%", 
-                      height: 480, 
-                      display: "flex", 
-                      overflowX: "auto", 
-                      gap: 0.5,
-                      scrollSnapType: "x mandatory",
-                      '&::-webkit-scrollbar': { height: '8px' },
-                      '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '4px' }
-                    }}>
-                      {resource.photoUrls.map((url: string, index: number) => (
-                        <Box key={index} sx={{ flex: "0 0 100%", height: "100%", scrollSnapAlign: "start" }}>
-                          <img src={url} alt={`${resource.name} ${index}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        </Box>
-                      ))}
+              <Box sx={{ bgcolor: "#0A0E1A", position: "relative" }}>
+                {/* Main Photo Display */}
+                <Box sx={{ 
+                  width: "100%", 
+                  height: 500, 
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "zoom-in"
+                }} onClick={() => setLightboxOpen(true)}>
+                  {Array.isArray(resource.photoUrls) && resource.photoUrls.length > 0 ? (
+                    <>
+                      <img 
+                        src={resource.photoUrls[activePhotoIndex]} 
+                        alt={`${resource.name} ${activePhotoIndex}`} 
+                        style={{ 
+                          width: "100%", 
+                          height: "100%", 
+                          objectFit: "cover",
+                          transition: "opacity 0.3s ease-in-out"
+                        }} 
+                      />
+                      
+                      {/* Navigation Overlay */}
+                      {resource.photoUrls.length > 1 && (
+                        <>
+                          <IconButton 
+                            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex((prev) => (prev - 1 + resource.photoUrls.length) % resource.photoUrls.length); }}
+                            sx={{ position: "absolute", left: 16, bgcolor: "rgba(0,0,0,0.5)", color: "white", "&:hover": { bgcolor: "rgba(0,0,0,0.8)" } }}
+                          >
+                            <ChevronLeft />
+                          </IconButton>
+                          <IconButton 
+                            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex((prev) => (prev + 1) % resource.photoUrls.length); }}
+                            sx={{ position: "absolute", right: 16, bgcolor: "rgba(0,0,0,0.5)", color: "white", "&:hover": { bgcolor: "rgba(0,0,0,0.8)" } }}
+                          >
+                            <ChevronRight />
+                          </IconButton>
+                        </>
+                      )}
+                      
+                      {/* Fullscreen Button */}
+                      <IconButton 
+                        sx={{ position: "absolute", top: 16, right: 16, bgcolor: "rgba(0,0,0,0.5)", color: "white", "&:hover": { bgcolor: "rgba(0,0,0,0.8)" } }}
+                        onClick={(e) => { e.stopPropagation(); setLightboxOpen(true); }}
+                      >
+                        <Fullscreen />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(124,77,255,0.05)" }}>
+                      {typeIcons[rType] || typeIcons.Room}
                     </Box>
-                ) : (
-                  <Box sx={{ width: "100%", height: 480, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(124,77,255,0.05)" }}>
-                    {typeIcons[rType] || typeIcons.Room}
+                  )}
+
+                  {/* Resource Category Badge */}
+                  <Box sx={{ position: "absolute", top: 16, left: 16 }}>
+                      <Chip label={rType} sx={{ bgcolor: "rgba(10,14,26,0.8)", backdropFilter: "blur(10px)", color: typeColors[rType], fontWeight: 700, px: 2, py: 2.5, fontSize: "0.8rem", border: `1px solid ${typeColors[rType]}44` }} />
+                  </Box>
+                </Box>
+
+                {/* Thumbnails Row */}
+                {Array.isArray(resource.photoUrls) && resource.photoUrls.length > 1 && (
+                  <Box sx={{ 
+                    p: 2, 
+                    display: "flex", 
+                    gap: 1.5, 
+                    overflowX: "auto", 
+                    bgcolor: "rgba(0,0,0,0.3)",
+                    borderTop: "1px solid rgba(255,255,255,0.05)",
+                    "&::-webkit-scrollbar": { height: 6 },
+                    "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.1)", borderRadius: 10 }
+                  }}>
+                    {resource.photoUrls.map((url: string, index: number) => (
+                      <Box 
+                        key={index}
+                        onClick={() => setActivePhotoIndex(index)}
+                        sx={{ 
+                          width: 80, 
+                          height: 60, 
+                          flexShrink: 0, 
+                          borderRadius: 2, 
+                          overflow: "hidden",
+                          cursor: "pointer",
+                          border: "2px solid",
+                          borderColor: activePhotoIndex === index ? "primary.main" : "transparent",
+                          opacity: activePhotoIndex === index ? 1 : 0.6,
+                          transition: "0.2s"
+                        }}
+                      >
+                        <img src={url} alt={`Thumb ${index}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </Box>
+                    ))}
                   </Box>
                 )}
-                <Box sx={{ position: "absolute", top: 20, left: 20 }}>
-                    <Chip label={rType} sx={{ bgcolor: "rgba(10,14,26,0.8)", backdropFilter: "blur(10px)", color: typeColors[rType], fontWeight: 700, px: 2, py: 2.5, fontSize: "0.9rem", border: `1px solid ${typeColors[rType]}44` }} />
-                </Box>
               </Box>
             )}
             <CardContent sx={{ p: 4 }}>
@@ -554,6 +630,57 @@ export default function ResourceDetail() {
             `}
         </style>
       </Backdrop>
+
+      {/* LIGHTBOX DIALOG */}
+      <Dialog
+        fullScreen
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        PaperProps={{
+          sx: { bgcolor: "rgba(0,0,0,0.95)", backgroundImage: "none" }
+        }}
+      >
+        <Box sx={{ height: "100%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <IconButton 
+            onClick={() => setLightboxOpen(false)}
+            sx={{ position: "absolute", top: 24, right: 24, color: "white", bgcolor: "rgba(255,255,255,0.1)", "&:hover": { bgcolor: "rgba(255,255,255,0.2)" } }}
+          >
+            <Close />
+          </IconButton>
+
+          {resource.photoUrls && resource.photoUrls.length > 0 && (
+            <>
+              <img 
+                src={resource.photoUrls[activePhotoIndex]} 
+                alt="Full representation" 
+                style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} 
+              />
+
+              {resource.photoUrls.length > 1 && (
+                <>
+                  <IconButton 
+                    onClick={() => setActivePhotoIndex((prev) => (prev - 1 + resource.photoUrls.length) % resource.photoUrls.length)}
+                    sx={{ position: "absolute", left: 32, color: "white", scale: "1.5" }}
+                  >
+                    <ChevronLeft />
+                  </IconButton>
+                  <IconButton 
+                    onClick={() => setActivePhotoIndex((prev) => (prev + 1) % resource.photoUrls.length)}
+                    sx={{ position: "absolute", right: 32, color: "white", scale: "1.5" }}
+                  >
+                    <ChevronRight />
+                  </IconButton>
+                  
+                  {/* Photo Counter */}
+                  <Box sx={{ position: "absolute", bottom: 40, color: "white", bgcolor: "rgba(0,0,0,0.5)", px: 3, py: 1, borderRadius: 10, fontWeight: 700 }}>
+                    {activePhotoIndex + 1} / {resource.photoUrls.length}
+                  </Box>
+                </>
+              )}
+            </>
+          )}
+        </Box>
+      </Dialog>
     </Box>
   );
 }

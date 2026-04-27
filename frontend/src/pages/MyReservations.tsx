@@ -77,7 +77,7 @@ export default function MyReservations() {
               <TableBody>
                 {reservations.map((r) => {
                   const rName = r.resource?.name || "Unknown Resource";
-                  const rTotal = r.totalPrice || ( (r.resource?.deposit || 0) + (r.resource?.price || 0) );
+                  const rTotal = r.total_amount || ( (r.resource?.deposit || 0) + (r.resource?.price || 0) );
                   
                   const dateStr = new Date(r.date).toLocaleDateString();
                   const startStr = new Date(r.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });

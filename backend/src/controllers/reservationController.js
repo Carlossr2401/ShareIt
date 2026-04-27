@@ -26,11 +26,11 @@ export const createReservation = async (req, res) => {
         where: { id: user_id },
       });
 
-      const totalPrice = (resource.deposit || 0) + (resource.price || 0);
+      const total_amount = (resource.deposit || 0) + (resource.price || 0);
 
       // Si es pago con MONEDERO (WALLET), verificar saldo
       if (paymentMethod === "WALLET") {
-        if (!profile || profile.wallet < totalPrice) {
+        if (!profile || profile.wallet < total_amount) {
           throw new Error(
             "Saldo insuficiente en tu Wallet para realizar esta reserva",
           );
@@ -39,11 +39,11 @@ export const createReservation = async (req, res) => {
         // Descontar del monedero
         await tx.profile.update({
           where: { id: user_id },
-          data: { wallet: { decrement: totalPrice } },
+          data: { wallet: { decrement: total_amount } },
         });
       } else if (paymentMethod === "CARD") {
         // Simulación de pago con tarjeta (siempre éxito en este MVP)
-        console.log(`Pago con tarjeta procesado: €${totalPrice} para el usuario ${user_id}`);
+        console.log(`Pago con tarjeta procesado: €${total_amount} para el usuario ${user_id}`);
       }
 
       const overlapping = await tx.reservation.findMany({
@@ -69,7 +69,7 @@ export const createReservation = async (req, res) => {
           startTime: reservationStartTime,
           endTime: reservationEndTime,
           paymentMethod: paymentMethod,
-          totalPrice: totalPrice
+          total_amount: total_amount
         },
       });
     });
