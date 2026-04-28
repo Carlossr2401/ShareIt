@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import {
   Box, Typography, Card, CardContent, Table, TableHead, TableRow,
   TableCell, TableBody, TableContainer, Chip, IconButton, Tooltip, Button,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
-import { Delete, Refresh, EventNote } from "@mui/icons-material";
+import { Delete, Refresh, EventNote, QrCode2 } from "@mui/icons-material";
+import { QRCodeSVG } from "qrcode.react";
 import { useI18n } from "../context/I18nContext";
 
 export default function MyReservations() {
   const { t } = useI18n();
   const [reservations, setReservations] = useState<any[]>([]);
+  const [selectedQrReservation, setSelectedQrReservation] = useState<any>(null);
 
   const fetchReservations = async () => {
     try {
@@ -69,7 +72,7 @@ export default function MyReservations() {
             <Table>
               <TableHead>
                 <TableRow>
-                  {["Resource", "Date", "Time Range", "Payment", "Total", "Actions"].map(h => (
+                  {["Resource", "Date", "Time Range", "Status", "Payment", "Total", "Actions"].map(h => (
                     <TableCell key={h} sx={{ fontWeight: 600, color: "grey.400" }}>{h}</TableCell>
                   ))}
                 </TableRow>
@@ -90,6 +93,18 @@ export default function MyReservations() {
                       <TableCell>{startStr} - {endStr}</TableCell>
                       <TableCell>
                         <Chip 
+                          label={r.status || "PENDING"} 
+                          size="small" 
+                          sx={{ 
+                            fontSize: "0.7rem", 
+                            fontWeight: 700,
+                            bgcolor: r.status === "CHECKED_IN" ? "rgba(105,240,174,0.1)" : "rgba(255,215,64,0.1)",
+                            color: r.status === "CHECKED_IN" ? "#69F0AE" : "#FFD740",
+                          }} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
                           label={r.paymentMethod || "WALLET"} 
                           size="small" 
                           variant="outlined"
@@ -104,7 +119,18 @@ export default function MyReservations() {
                       </TableCell>
                       <TableCell sx={{ fontWeight: 700, color: "#69F0AE" }}>€{rTotal}</TableCell>
                       <TableCell>
-                        <Tooltip title="Cancel Booking"><IconButton size="small" onClick={() => handleCancel(r.reservationId)} sx={{ color: "error.main" }}><Delete fontSize="small" /></IconButton></Tooltip>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Tooltip title="Show Check-in QR">
+                            <IconButton size="small" onClick={() => setSelectedQrReservation(r)} sx={{ color: "primary.main" }}>
+                              <QrCode2 fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Cancel Booking">
+                            <IconButton size="small" onClick={() => handleCancel(r.reservationId)} sx={{ color: "error.main" }}>
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   );
@@ -114,6 +140,34 @@ export default function MyReservations() {
           </TableContainer>
         </CardContent>
       </Card>
+
+      {/* QR Code Dialog */}
+      <Dialog open={!!selectedQrReservation} onClose={() => setSelectedQrReservation(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <QrCode2 color="primary" /> Reservation QR
+        </DialogTitle>
+        <DialogContent dividers sx={{ display: "flex", flexDirection: "column", alignItems: "center", p: 4 }}>
+          {selectedQrReservation && (
+            <>
+              <Box sx={{ bgcolor: "white", p: 2, borderRadius: 2, mb: 3 }}>
+                <QRCodeSVG value={`http://localhost:5173/checkin/${selectedQrReservation.reservationId}`} size={200} />
+              </Box>
+              <Typography variant="h6" fontWeight={800} gutterBottom>
+                {selectedQrReservation.resource?.name}
+              </Typography>
+              <Typography variant="body2" color="grey.400" textAlign="center">
+                Scan this QR code with the device at the resource to confirm your check-in.
+              </Typography>
+              {selectedQrReservation.status === "CHECKED_IN" && (
+                <Chip label="ALREADY CHECKED IN" color="success" sx={{ mt: 2, fontWeight: 700 }} />
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedQrReservation(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

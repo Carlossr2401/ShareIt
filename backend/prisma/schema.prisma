@@ -69,6 +69,10 @@ model Reservation {
   
   paymentMethod String   @default("WALLET") @map("payment_method")
   total_amount   Float    @default(0) @map("total_amount")
+  status        String   @default("PENDING") // PENDING, CHECKED_IN, COMPLETED, CANCELLED
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
 
   resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
   user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)

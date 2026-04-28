@@ -164,3 +164,32 @@ export const getAllReservations = async (req, res) => {
     res.status(500).json({ error: "No se pudieron obtener las reservas" });
   }
 };
+
+export const checkInReservation = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const reservation = await prisma.reservation.findUnique({
+      where: { reservationId: id },
+      include: { resource: true, user: true },
+    });
+
+    if (!reservation) {
+      return res.status(404).json({ error: "Reserva no encontrada" });
+    }
+
+    if (reservation.status === "CHECKED_IN") {
+      return res.status(400).json({ error: "El check-in ya fue realizado previamente" });
+    }
+
+    const updated = await prisma.reservation.update({
+      where: { reservationId: id },
+      data: { status: "CHECKED_IN" },
+    });
+
+    res.json({ message: "Check-in realizado exitosamente", reservation: updated });
+  } catch (error) {
+    console.error("Error en el check-in:", error);
+    res.status(500).json({ error: "Error interno procesando el check-in" });
+  }
+};

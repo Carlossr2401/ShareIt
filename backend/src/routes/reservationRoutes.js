@@ -4,6 +4,7 @@ import {
   getUserReservations,
   deleteReservation,
   getAllReservations,
+  checkInReservation,
 } from "../controllers/reservationController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
@@ -37,6 +38,9 @@ const router = express.Router();
  *         end_time:
  *           type: string
  *           format: time
+ *         status:
+ *           type: string
+ *           example: "PENDING"
  */
 
 /**
@@ -116,6 +120,28 @@ router.get("/", getAllReservations);
  *                 $ref: '#/components/schemas/Reservation'
  */
 router.get("/me", getUserReservations);
+
+/**
+ * @swagger
+ * /reservations/{id}/checkin:
+ *   post:
+ *     summary: Confirma el check-in de una reserva mediante escaneo de QR
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Check-in exitoso
+ *       400:
+ *         description: Check-in ya fue realizado
+ *       404:
+ *         description: Reserva no encontrada
+ */
+router.post("/:id/checkin", checkInReservation);
 
 /**
  * @swagger
