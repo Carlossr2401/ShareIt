@@ -47,7 +47,7 @@ export default function ResourceDetail() {
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [selectedSlot, setSelectedSlot] = useState<any>(null); 
   const [paymentMethod, setPaymentMethod] = useState<"WALLET" | "CARD">("WALLET");
-  const [isProcessingCard, setIsProcessingCard] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
   
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [successStatus, setSuccessStatus] = useState<string | null>(null);
@@ -83,9 +83,10 @@ export default function ResourceDetail() {
     setErrorStatus(null);
     setSuccessStatus(null);
 
+    setIsBooking(true);
+    
     // Si es pago con tarjeta, simulamos el procesamiento
     if (paymentMethod === "CARD") {
-        setIsProcessingCard(true);
         // Esperamos 2 segundos para dar realismo a la animación solicitada
         await new Promise(resolve => setTimeout(resolve, 2500));
     }
@@ -111,16 +112,16 @@ export default function ResourceDetail() {
       });
 
       if (res.ok) {
-        setIsProcessingCard(false);
+        setIsBooking(false);
         setSuccessStatus(`Reservation created successfully via ${paymentMethod === "CARD" ? "Card" : "Wallet"}!`);
         setTimeout(() => navigate("/reservations"), 1500);
       } else {
         const data = await res.json();
-        setIsProcessingCard(false);
+        setIsBooking(false);
         setErrorStatus(data.error || "Error creating reservation");
       }
     } catch {
-      setIsProcessingCard(false);
+      setIsBooking(false);
       setErrorStatus("Network error occurred");
     }
   };
@@ -493,7 +494,7 @@ export default function ResourceDetail() {
                 fullWidth 
                 variant="contained" 
                 size="large" 
-                disabled={!selectedSlot}
+                disabled={!selectedSlot || isBooking}
                 startIcon={<CheckCircle />} 
                 onClick={() => setConfirmOpen(true)}
                 sx={{ 
@@ -586,6 +587,7 @@ export default function ResourceDetail() {
           </Button>
           <Button
             fullWidth
+            disabled={isBooking}
             onClick={() => { setConfirmOpen(false); handleBook(); }}
             variant="contained"
             sx={{
@@ -611,7 +613,7 @@ export default function ResourceDetail() {
             background: "rgba(10,14,26,0.95)",
             backdropFilter: "blur(20px)"
         }}
-        open={isProcessingCard}
+        open={isBooking}
       >
         <Box sx={{ position: "relative", display: "inline-flex" }}>
             <CircularProgress color="primary" size={120} thickness={2} sx={{ opacity: 0.3 }} />
@@ -626,15 +628,21 @@ export default function ResourceDetail() {
                 }} 
             />
             <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
-                <CreditCard sx={{ fontSize: 50, color: "primary.main" }} />
+                {paymentMethod === "CARD" ? (
+                    <CreditCard sx={{ fontSize: 50, color: "primary.main" }} />
+                ) : (
+                    <CalendarMonth sx={{ fontSize: 50, color: "primary.main" }} />
+                )}
             </Box>
         </Box>
         <Box sx={{ textAlign: "center" }}>
             <Typography variant="h4" fontWeight={900} sx={{ letterSpacing: -1, mb: 1 }}>
-                Processing Card Payment
+                {paymentMethod === "CARD" 
+                    ? (t("detail.processingCard") || "Processing Card Payment") 
+                    : (t("detail.processingReservation") || "Creating Reservation")}
             </Typography>
             <Typography variant="h6" color="grey.500" sx={{ fontWeight: 500 }}>
-                Please do not refresh the page...
+                {t("detail.pleaseWait") || "Please do not refresh the page..."}
             </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>

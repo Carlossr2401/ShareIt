@@ -97,6 +97,9 @@ const translations: Record<Lang, Record<string, string>> = {
     "detail.deposit": "Deposit",
     "detail.cancel": "Cancel",
     "detail.confirmBtn": "Confirm",
+    "detail.processingCard": "Processing Card Payment",
+    "detail.processingReservation": "Creating Reservation",
+    "detail.pleaseWait": "Please do not refresh the page...",
 
     // My Reservations
     "reservations.title": "My Reservations",
@@ -272,6 +275,9 @@ const translations: Record<Lang, Record<string, string>> = {
     "detail.deposit": "Depósito",
     "detail.cancel": "Cancelar",
     "detail.confirmBtn": "Confirmar",
+    "detail.processingCard": "Procesando pago con tarjeta",
+    "detail.processingReservation": "Creando Reserva",
+    "detail.pleaseWait": "Por favor, no refresques la página...",
 
     // My Reservations
     "reservations.title": "Mis Reservas",
