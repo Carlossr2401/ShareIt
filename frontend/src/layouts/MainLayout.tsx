@@ -27,16 +27,39 @@ import {
   Settings,
 } from "@mui/icons-material";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { useI18n } from "../context/I18nContext";
 import { useUser } from "../context/UserContext";
+import { useEffect, useRef, useState } from "react";
 
 const DRAWER_WIDTH = 260;
 
 export default function MainLayout() {
   const navigate = useNavigate();
+  const skipLinkRef = useRef<HTMLAnchorElement>(null);
   const location = useLocation();
   const { lang, setLang, t } = useI18n();
   const { role, userName, avatarUrl } = useUser();
+  const [skipLinkVisible, setSkipLinkVisible] = useState(false);
+  const [skipKey, setSkipKey] = useState(0);
+
+  const handleSkipLinkBlur = () => {
+    setSkipLinkVisible(false);
+  };
+
+  const handleSkipLinkFocus = () => {
+    setSkipLinkVisible(true);
+  };
+
+  const handleSkipAction = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    setSkipLinkVisible(false);
+    navigate({ pathname: "/", hash: "#quick-actions" });
+
+    setTimeout(() => {
+      setSkipKey(prev => prev + 1);
+    }, 400);
+  };
 
   const userMenuItems = [
     { text: t("nav.dashboard") || "Dashboard", icon: <DashboardIcon />, path: "/" },
@@ -70,7 +93,46 @@ export default function MainLayout() {
     },
   ];
 
+  useEffect(() => {
+    document.body.focus?.();
+  }, [location.pathname]);
+
   return (
+    <>
+      <a
+        key={skipKey}
+        ref={skipLinkRef}
+        href="/#quick-actions"
+        tabIndex={0}
+        onClick={(e) => {
+            e.preventDefault();
+            (e.currentTarget as HTMLAnchorElement).blur();
+            navigate({ pathname: "/", hash: "#quick-actions" });
+          }}
+        style={{
+          position: 'fixed',
+          top: skipLinkVisible ? '0' : '-100px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#7C4DFF',
+          color: 'white',
+          padding: '12px 24px',
+          textDecoration: 'none',
+          borderRadius: '0 0 8px 8px',
+          fontWeight: 600,
+          fontSize: '16px',
+          zIndex: 9999,
+          transition: 'top 0.2s',
+        }}
+        onFocus={handleSkipLinkFocus}
+        onBlur={handleSkipLinkBlur}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSkipAction(e);
+        }}
+      >
+        {t("dashboard.quickActions")}
+      </a>
+    
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <Drawer
         variant="permanent"
@@ -313,8 +375,8 @@ export default function MainLayout() {
         <Box component="main" sx={{ flexGrow: 1, p: 4, overflow: "auto", bgcolor: "#0A0E1A" }}>
           <Outlet />
         </Box>
-      </Box>
+            </Box>
     </Box>
+    </>
   );
 }
-

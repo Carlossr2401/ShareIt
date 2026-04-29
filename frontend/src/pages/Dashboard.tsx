@@ -6,8 +6,8 @@ import {
   TrendingUp, CalendarMonth,
 } from "@mui/icons-material";
 import type { Prisma } from "../../../backend/node_modules/@prisma/client";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
 import { useUser } from "../context/UserContext";
 import axios from "axios";
@@ -20,6 +20,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const { userName } = useUser();
+  const firstActionRef = useRef<HTMLButtonElement>(null);
+  const location = useLocation();
 
   const [statsData, setStatsData] = useState({
     resourcesCount: 0,
@@ -30,6 +32,18 @@ export default function Dashboard() {
 
   const [recentReservations, setRecentReservations] = useState<ReservationWithResource[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  if (!loading && location.hash === "#quick-actions") {
+    const timer = setTimeout(() => {
+      if (firstActionRef.current) {
+        firstActionRef.current.focus();
+        firstActionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }
+}, [location.hash, loading]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -138,7 +152,10 @@ export default function Dashboard() {
                 <TrendingUp sx={{ color: "primary.main" }} /> {t("dashboard.quickActions")}
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                
                 <Button 
+                id="quick-actions"
+                  ref={firstActionRef}
                   variant="contained" 
                   startIcon={<MeetingRoom />} 
                   onClick={() => navigate("/resources")} 
