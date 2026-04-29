@@ -1,8 +1,10 @@
 import express from "express";
-import { signup, login, logout, getMe, topUpWallet } from "../controllers/authController.js";
+import multer from "multer";
+import { signup, login, logout, getMe, updateProfile, topUpWallet } from "../controllers/authController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -93,6 +95,40 @@ router.post("/logout", logout);
  *         description: No autorizado
  */
 router.get("/me", requireAuth, getMe);
+/**
+ * @swagger
+ * /auth/update-profile:
+ *   put:
+ *     summary: Actualizar el perfil del usuario autenticado
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre completo o público
+ *               username:
+ *                 type: string
+ *                 description: Nombre de usuario único
+ *               bio:
+ *                 type: string
+ *                 description: Biografía del usuario (máx 255 caracteres)
+ *               avatar_url:
+ *                 type: string
+ *                 description: URL de la imagen de perfil
+ *     responses:
+ *       200:
+ *         description: Perfil actualizado correctamente
+ *       400:
+ *         description: Error en los datos enviados o nombre de usuario duplicado
+ *       401:
+ *         description: No autorizado
+ */
+router.put("/update-profile", requireAuth, upload.single("avatar"), updateProfile);
 
 /**
  * @swagger

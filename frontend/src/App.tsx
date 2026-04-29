@@ -9,6 +9,7 @@ import MyReservations from "./pages/MyReservations";
 import Wallet from "./pages/Wallet";
 import AdminResources from "./pages/AdminResources";
 import AdminReservations from "./pages/AdminReservations";
+import EditProfile from "./pages/EditProfile";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Comprueba si hay una bandera de sesión en localStorage.
@@ -37,6 +38,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
+        <Route path="/profile" element={<EditProfile />} />
         <Route path="/" element={<Dashboard />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/resources/:id" element={<ResourceDetail />} />
