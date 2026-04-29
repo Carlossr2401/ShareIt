@@ -16,6 +16,7 @@ import type { Prisma } from "../../../backend/node_modules/.prisma/client";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 import dayjs from "dayjs";
 import { useUser } from "../context/UserContext";
+import axios from "axios";
 
 type ResourceWithRelations = Prisma.ResourceGetPayload<{
   include: { availabilities: true }
@@ -52,6 +53,8 @@ export default function ResourceDetail() {
   const [successStatus, setSuccessStatus] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  const [userBalance, setUserBalance] = useState<number>(0);
+
   useEffect(() => {
     const fetchResource = async () => {
       try {
@@ -68,6 +71,16 @@ export default function ResourceDetail() {
     };
     fetchResource();
   }, [id]);
+
+  const fetchBalance = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/auth/me", { withCredentials: true });
+        setUserBalance(res.data.wallet || 0);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    };
+    fetchBalance();
 
   const handleBook = async () => {
     if (!selectedSlot || !date) {
@@ -321,14 +334,13 @@ export default function ResourceDetail() {
                                 value="WALLET" 
                                 control={<Radio size="small" />} 
                                 label={
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                                        <AccountBalanceWallet sx={{ color: "primary.main" }} />
-                                        <Box>
-                                            <Typography variant="body2" fontWeight={700}>Internal Wallet</Typography>
-                                            <Typography variant="caption" color="grey.500">Fast & Secure internal balance</Typography>
-                                        </Box>
-                                    </Box>
-                                } 
+                                  <Box>
+                                    <Typography variant="body1">Internal Wallet</Typography>
+                                    <Typography variant="caption" sx={{ color: userBalance >= (resource.price + resource.deposit) ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                                      Available: €{userBalance.toFixed(2)}
+                                    </Typography>
+                                  </Box>
+                                }
                             />
                         </Paper>
 
@@ -460,8 +472,18 @@ export default function ResourceDetail() {
                 size="small"
                 sx={{ fontWeight: 700, borderRadius: 1.5, bgcolor: paymentMethod === "CARD" ? "rgba(0,229,255,0.1)" : "rgba(124,77,255,0.1)", color: paymentMethod === "CARD" ? "#00E5FF" : "#7C4DFF" }} 
               />
+              {paymentMethod === "WALLET" && (
+                <Typography variant="caption" sx={{ mt: 0.5, color: userBalance >= (resource.price + resource.deposit) ? "success.main" : "error.main", fontWeight: 700 }}>
+                  Available: €{userBalance.toFixed(2)}
+                </Typography>
+              )}
             </Box>
             <Divider sx={{ opacity: 0.1 }} />
+              {paymentMethod === "WALLET" && userBalance < (resource.price + resource.deposit) && (
+                <Alert severity="error" variant="filled" sx={{ borderRadius: 2 }}>
+                  Insufficient funds in your wallet.
+                </Alert>
+              )}
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Typography variant="h5" fontWeight={600} color="grey.200">Total Price</Typography>
               <Typography variant="h4" fontWeight={900} sx={{ color: "#69F0AE" }}>€{(resource.price || 0) + (resource.deposit || 0)}</Typography>
