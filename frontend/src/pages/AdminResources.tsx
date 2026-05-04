@@ -361,8 +361,8 @@ export default function AdminResources() {
   if (!isPersonalMode && role !== "admin") {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography variant="h5" color="error">Access Denied</Typography>
-        <Typography color="grey.500">You do not have permissions to view this page.</Typography>
+        <Typography variant="h5" color="error">{t("adminRes.accessDenied") || "Access Denied"}</Typography>
+        <Typography color="grey.500">{t("adminRes.noPermission") || "You do not have permissions to view this page."}</Typography>
       </Box>
     );
   }
@@ -373,7 +373,7 @@ export default function AdminResources() {
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3.5 }}>
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>What are you listing?</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t("adminRes.whatListing") || "What are you listing?"}</Typography>
               <Grid container spacing={2}>
                 {categories.map((cat) => (
                   <Grid size={{ xs: 6, sm: 4 }} key={cat.id}>
@@ -388,7 +388,7 @@ export default function AdminResources() {
                     >
                       <CardActionArea onClick={() => setFormData({ ...formData, category: cat.id })} sx={{ p: 2, textAlign: "center" }}>
                         <Box sx={{ color: formData.category === cat.id ? cat.color : "grey.600", mb: 1 }}>{cat.icon}</Box>
-                        <Typography variant="body2" fontWeight={700}>{cat.label}</Typography>
+                        <Typography variant="body2" fontWeight={700}>{t(`resources.${cat.id.toLowerCase()}`) || cat.label}</Typography>
                       </CardActionArea>
                     </Card>
                   </Grid>
@@ -397,19 +397,19 @@ export default function AdminResources() {
             </Box>
 
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Basic Info</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t("adminRes.basicInfo") || "Basic Info"}</Typography>
               <Grid container spacing={2.5}>
                 <Grid size={12}>
-                  <TextField fullWidth label="Resource Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} variant="filled" placeholder="e.g. Ergonomic Office Room A" />
+                  <TextField fullWidth label={t("adminRes.resName") || "Resource Name"} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} variant="filled" placeholder="e.g. Ergonomic Office Room A" />
                 </Grid>
                 <Grid size={12}>
-                  <TextField fullWidth label="Location / Building" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} variant="filled" placeholder="e.g. Building 4, Floor 2" />
+                  <TextField fullWidth label={t("adminRes.location") || "Location / Building"} value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} variant="filled" placeholder="e.g. Building 4, Floor 2" />
                 </Grid>
                 <Grid size={6}>
-                  <TextField fullWidth label="Hourly Price" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} slotProps={{ input: { startAdornment: "€ " } }} variant="filled" />
+                  <TextField fullWidth label={t("adminRes.hourlyPrice") || "Hourly Price"} type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} slotProps={{ input: { startAdornment: "€ " } }} variant="filled" />
                 </Grid>
                 <Grid size={6}>
-                  <TextField fullWidth label="Security Deposit" type="number" value={formData.deposit} onChange={(e) => setFormData({ ...formData, deposit: Number(e.target.value) })} slotProps={{ input: { startAdornment: "€ " } }} variant="filled" />
+                  <TextField fullWidth label={t("adminRes.securityDeposit") || "Security Deposit"} type="number" value={formData.deposit} onChange={(e) => setFormData({ ...formData, deposit: Number(e.target.value) })} slotProps={{ input: { startAdornment: "€ " } }} variant="filled" />
                 </Grid>
               </Grid>
             </Box>
@@ -419,23 +419,31 @@ export default function AdminResources() {
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3.5 }}>
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Description</Typography>
-              <TextField fullWidth multiline rows={4} label="Describe your listing" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} variant="filled" />
+              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t("adminRes.description") || "Description"}</Typography>
+              <TextField fullWidth multiline rows={4} label={t("adminRes.describeListing") || "Describe your listing"} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} variant="filled" />
             </Box>
 
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Rules & Usage</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t("adminRes.rulesUsage") || "Rules & Usage"}</Typography>
               <Box sx={{ p: 2.5, bgcolor: "rgba(255,255,255,0.02)", borderRadius: 3, border: "1px solid rgba(255,255,255,0.06)" }}>
-                <Typography variant="caption" sx={{ mb: 1.5, display: "block", color: "grey.500", fontWeight: 600 }}>QUICK PRESETS</Typography>
+                <Typography variant="caption" sx={{ mb: 1.5, display: "block", color: "grey.500", fontWeight: 600 }}>{t("adminRes.quickPresets") || "QUICK PRESETS"}</Typography>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2.5 }}>
-                  {rulePresets.map((preset) => (
+                  {[
+                    t("rules.noFood") || "No food or drinks",
+                    t("rules.noSmoking") || "No smoking",
+                    t("rules.returnClean") || "Return clean",
+                    t("rules.handleCare") || "Handle with care",
+                    t("rules.quietArea") || "Quiet area",
+                    t("rules.max4") || "Maximum 4 people",
+                    t("rules.priorReservation") || "Prior reservation required",
+                  ].map((preset) => (
                     <Chip key={preset} label={preset} size="small" variant="outlined" onClick={() => addRulePreset(preset)} clickable sx={{ "&:hover": { bgcolor: "primary.dark" } }} />
                   ))}
                 </Box>
                 <Divider sx={{ my: 2, opacity: 0.05 }} />
                 <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-                  <TextField fullWidth size="small" placeholder="Custom rule..." value={newRule} onChange={(e) => setNewRule(e.target.value)} onKeyPress={(e) => e.key === "Enter" && addRule()} />
-                  <Button variant="contained" onClick={addRule} size="small">Add</Button>
+                  <TextField fullWidth size="small" placeholder={t("adminRes.customRule") || "Custom rule..."} value={newRule} onChange={(e) => setNewRule(e.target.value)} onKeyPress={(e) => e.key === "Enter" && addRule()} />
+                  <Button variant="contained" onClick={addRule} size="small">{t("adminRes.addBtnText") || "Add"}</Button>
                 </Box>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                   {formData.rules.map((rule, idx) => (
@@ -446,7 +454,7 @@ export default function AdminResources() {
             </Box>
 
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Photos</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t("adminRes.photos") || "Photos"}</Typography>
               <Box 
                 sx={{ 
                   border: "2px dashed",
@@ -467,7 +475,7 @@ export default function AdminResources() {
                 <input type="file" hidden accept="image/*" multiple onChange={(e) => handleFileSelection(e.target.files)} />
                 <PhotoCamera sx={{ fontSize: 40, color: isDragging ? "primary.main" : "grey.600", mb: 1 }} />
                 <Typography variant="body2" color={isDragging ? "primary.main" : "grey.400"}>
-                  {isDragging ? "Drop them here!" : "Click or drag to upload photos"}
+                  {isDragging ? (t("adminRes.dropHere") || "Drop them here!") : (t("adminRes.uploadPhotos") || "Click or drag to upload photos")}
                 </Typography>
               </Box>
 
@@ -511,31 +519,31 @@ export default function AdminResources() {
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3.5 }}>
             <Box sx={{ p: 3, bgcolor: "rgba(124,77,255,0.05)", borderRadius: 4, border: "1px solid rgba(124,77,255,0.12)" }}>
-              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>Quick Selection (Bulk)</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>{t("adminRes.quickSelection") || "Quick Selection (Bulk)"}</Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
                 {[{l:"M",v:1},{l:"T",v:2},{l:"W",v:3},{l:"T",v:4},{l:"F",v:5},{l:"S",v:6},{l:"S",v:0}].map((d) => (
                   <Chip key={d.v} label={d.l} onClick={() => toggleDay(d.v)} color={selectedDays.includes(d.v) ? "primary" : "default"} variant={selectedDays.includes(d.v) ? "filled" : "outlined"} sx={{ width: 40, height: 40, borderRadius: 2, fontWeight: 700 }} />
                 ))}
               </Box>
               <Grid container spacing={2} alignItems="center">
-                <Grid size={3}><TextField fullWidth size="small" type="time" label="Start" InputLabelProps={{ shrink: true }} value={bulkStart} onChange={(e) => setBulkStart(e.target.value)} variant="standard" /></Grid>
-                <Grid size={3}><TextField fullWidth size="small" type="time" label="End" InputLabelProps={{ shrink: true }} value={bulkEnd} onChange={(e) => setBulkEnd(e.target.value)} variant="standard" /></Grid>
+                <Grid size={3}><TextField fullWidth size="small" type="time" label={t("adminRes.start") || "Start"} InputLabelProps={{ shrink: true }} value={bulkStart} onChange={(e) => setBulkStart(e.target.value)} variant="standard" /></Grid>
+                <Grid size={3}><TextField fullWidth size="small" type="time" label={t("adminRes.end") || "End"} InputLabelProps={{ shrink: true }} value={bulkEnd} onChange={(e) => setBulkEnd(e.target.value)} variant="standard" /></Grid>
                 <Grid size={3}>
-                  <TextField select fullWidth size="small" label="Slot" value={slotDuration} onChange={(e) => setSlotDuration(Number(e.target.value))} variant="standard">
-                    <MenuItem value={0}>Full</MenuItem><MenuItem value={30}>30m</MenuItem><MenuItem value={60}>1h</MenuItem><MenuItem value={120}>2h</MenuItem>
+                  <TextField select fullWidth size="small" label={t("adminRes.slot") || "Slot"} value={slotDuration} onChange={(e) => setSlotDuration(Number(e.target.value))} variant="standard">
+                    <MenuItem value={0}>{t("adminRes.full") || "Full"}</MenuItem><MenuItem value={30}>30m</MenuItem><MenuItem value={60}>1h</MenuItem><MenuItem value={120}>2h</MenuItem>
                   </TextField>
                 </Grid>
-                <Grid size={3}><Button variant="contained" fullWidth onClick={applyBulkSchedule} disabled={selectedDays.length === 0} sx={{ height: 40, borderRadius: 2 }}>Apply</Button></Grid>
+                <Grid size={3}><Button variant="contained" fullWidth onClick={applyBulkSchedule} disabled={selectedDays.length === 0} sx={{ height: 40, borderRadius: 2 }}>{t("adminRes.apply") || "Apply"}</Button></Grid>
               </Grid>
               <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                <Button size="small" onClick={() => setPreset("weekdays")}>Weekdays</Button>
-                <Button size="small" onClick={() => setPreset("weekend")}>Weekend</Button>
-                <Button size="small" color="error" sx={{ ml: "auto" }} onClick={() => setAvailabilities([])}>Reset</Button>
+                <Button size="small" onClick={() => setPreset("weekdays")}>{t("adminRes.weekdays") || "Weekdays"}</Button>
+                <Button size="small" onClick={() => setPreset("weekend")}>{t("adminRes.weekend") || "Weekend"}</Button>
+                <Button size="small" color="error" sx={{ ml: "auto" }} onClick={() => setAvailabilities([])}>{t("adminRes.reset") || "Reset"}</Button>
               </Box>
             </Box>
 
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 2, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Defined Schedule</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 2, color: "grey.400", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t("adminRes.definedSchedule") || "Defined Schedule"}</Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1, maxHeight: 200, overflowY: "auto", pr: 1 }}>
                 {availabilities.map((av, idx) => (
                   <Box key={idx} sx={{ display: "flex", gap: 2, alignItems: "center", p: 1.5, bgcolor: "rgba(255,255,255,0.02)", borderRadius: 2, border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -544,7 +552,7 @@ export default function AdminResources() {
                     <IconButton size="small" color="error" onClick={() => removeAvailabilityRow(idx)}><Delete fontSize="inherit" /></IconButton>
                   </Box>
                 ))}
-                <Button fullWidth variant="text" size="small" startIcon={<Add />} onClick={addAvailabilityRow} sx={{ mt: 1, py: 1, borderRadius: 2, border: "1px dashed rgba(124,77,255,0.2)" }}>Manual Slot</Button>
+                <Button fullWidth variant="text" size="small" startIcon={<Add />} onClick={addAvailabilityRow} sx={{ mt: 1, py: 1, borderRadius: 2, border: "1px dashed rgba(124,77,255,0.2)" }}>{t("adminRes.manualSlot") || "Manual Slot"}</Button>
               </Box>
             </Box>
           </Box>
@@ -580,10 +588,16 @@ export default function AdminResources() {
               <Table>
                 <TableHead sx={{ bgcolor: "rgba(255,255,255,0.02)" }}>
                   <TableRow>
-                    {["Resource", "Type", "Location", "Price/Deposit", "Status"].map(h => (
+                    {[
+                      t("adminRes.resource") || "Resource",
+                      t("adminRes.type") || "Type",
+                      t("adminRes.location") || "Location",
+                      t("adminRes.priceDeposit") || "Price/Deposit",
+                      t("adminRes.status") || "Status"
+                    ].map(h => (
                       <TableCell key={h} sx={{ fontWeight: 700, color: "grey.400", py: 2.5 }}>{h}</TableCell>
                     ))}
-                    <TableCell sx={{ fontWeight: 700, color: "grey.400", py: 2.5 }} align="right">Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "grey.400", py: 2.5 }} align="right">{t("adminRes.actions") || "Actions"}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -592,23 +606,23 @@ export default function AdminResources() {
                     return (
                       <TableRow key={r.resourceId} sx={{ "&:last-child td": { border: 0 }, "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
                         <TableCell><Box sx={{ display: "flex", alignItems: "center", gap: 2 }}><Box sx={{ width: 36, height: 36, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType] || "#7C4DFF"}22`, color: typeColors[rType] || "#7C4DFF" }}>{typeIcons[rType] || typeIcons.Room}</Box><Typography fontWeight={600}>{r.name}</Typography></Box></TableCell>
-                        <TableCell><Chip label={rType} size="small" sx={{ bgcolor: "rgba(124,77,255,0.08)", color: "primary.light", fontWeight: 600 }} /></TableCell>
+                        <TableCell><Chip label={t(`resources.${rType.toLowerCase()}`) || rType} size="small" sx={{ bgcolor: "rgba(124,77,255,0.08)", color: "primary.light", fontWeight: 600 }} /></TableCell>
                         <TableCell sx={{ color: "grey.400" }}>{r.location}</TableCell>
                         <TableCell>
                           <Typography variant="body2" fontWeight={600}>€{r.price || 0}</Typography>
-                          <Typography variant="caption" color="grey.600">€{r.deposit || 0} deposit</Typography>
+                          <Typography variant="caption" color="grey.600">€{r.deposit || 0} {t("resources.deposit") || "deposit"}</Typography>
                         </TableCell>
-                        <TableCell><Chip label={!r.isArchived ? "Active" : "Archived"} size="small" sx={{ backgroundColor: !r.isArchived ? "rgba(105,240,174,0.1)" : "rgba(255,82,82,0.1)", color: !r.isArchived ? "#69F0AE" : "#FF5252", fontWeight: 700 }} /></TableCell>
+                        <TableCell><Chip label={!r.isArchived ? (t("adminRes.active") || "Active") : (t("adminRes.archived") || "Archived")} size="small" sx={{ backgroundColor: !r.isArchived ? "rgba(105,240,174,0.1)" : "rgba(255,82,82,0.1)", color: !r.isArchived ? "#69F0AE" : "#FF5252", fontWeight: 700 }} /></TableCell>
                         <TableCell align="right">
                           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
-                            <Tooltip title="View Reservations">
+                            <Tooltip title={t("adminRes.viewReservations") || "View Reservations"}>
                               <IconButton size="small" onClick={() => navigate(`/resources/${r.resourceId}/reservations`)} sx={{ color: "info.main" }}>
                                 <CalendarMonth fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Edit"><IconButton size="small" onClick={() => handleOpenDialog(r)} sx={{ color: "primary.main" }}><Edit fontSize="small" /></IconButton></Tooltip>
-                            <Tooltip title={!r.isArchived ? "Archive" : "Unarchive"}><IconButton size="small" onClick={() => handleToggleArchive(r.resourceId, r.isArchived)} sx={{ color: r.isArchived ? "success.main" : "warning.main" }}>{r.isArchived ? <Add fontSize="small" /> : <Delete fontSize="small" />}</IconButton></Tooltip>
-                            <Tooltip title="Delete Permanently"><IconButton size="small" sx={{ color: "error.main" }} onClick={() => handleDeleteResource(r.resourceId)}><Delete fontSize="small" /></IconButton></Tooltip>
+                            <Tooltip title={t("adminRes.edit") || "Edit"}><IconButton size="small" onClick={() => handleOpenDialog(r)} sx={{ color: "primary.main" }}><Edit fontSize="small" /></IconButton></Tooltip>
+                            <Tooltip title={!r.isArchived ? (t("adminRes.archive") || "Archive") : (t("adminRes.unarchive") || "Unarchive")}><IconButton size="small" onClick={() => handleToggleArchive(r.resourceId, r.isArchived)} sx={{ color: r.isArchived ? "success.main" : "warning.main" }}>{r.isArchived ? <Add fontSize="small" /> : <Delete fontSize="small" />}</IconButton></Tooltip>
+                            <Tooltip title={t("adminRes.deletePermanently") || "Delete Permanently"}><IconButton size="small" sx={{ color: "error.main" }} onClick={() => handleDeleteResource(r.resourceId)}><Delete fontSize="small" /></IconButton></Tooltip>
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -627,12 +641,12 @@ export default function AdminResources() {
             </Box>
             <Box>
               <Typography variant="h5" fontWeight={700} gutterBottom>
-                {isPersonalMode ? "No listings yet" : "No resources found in platform"}
+                {isPersonalMode ? (t("adminRes.noListings") || "No listings yet") : (t("adminRes.noResourcesFound") || "No resources found in platform")}
               </Typography>
               <Typography variant="body1" color="grey.500" sx={{ maxWidth: 400, mx: "auto" }}>
                 {isPersonalMode 
-                  ? "Start sharing your items with others! Once you create your first listing, it will appear here." 
-                  : "The platform's database is currently empty of resources."}
+                  ? (t("adminRes.startSharing") || "Start sharing your items with others! Once you create your first listing, it will appear here.") 
+                  : (t("adminRes.databaseEmpty") || "The platform's database is currently empty of resources.")}
               </Typography>
             </Box>
             {isPersonalMode && (
@@ -643,7 +657,7 @@ export default function AdminResources() {
                 onClick={() => handleOpenDialog()}
                 sx={{ mt: 2, background: "linear-gradient(135deg, #7C4DFF, #651FFF)", borderRadius: 3, px: 4 }}
               >
-                Create First Listing
+                {t("adminRes.createFirstListing") || "Create First Listing"}
               </Button>
             )}
           </CardContent>
@@ -653,11 +667,15 @@ export default function AdminResources() {
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4, bgcolor: "#121212", backgroundImage: "none", border: "1px solid rgba(255,255,255,0.08)" } }}>
         <DialogTitle sx={{ pb: 0, pt: 4, px: 4 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-            <Typography variant="h5" fontWeight={900}>{editId ? "Edit Resource" : "Add New Resource"}</Typography>
-            <Typography variant="caption" sx={{ color: "grey.600", fontWeight: 700 }}>STEP {activeStep + 1} OF 3</Typography>
+            <Typography variant="h5" fontWeight={900}>{editId ? (t("adminRes.editResource") || "Edit Resource") : (t("adminRes.addNewResource") || "Add New Resource")}</Typography>
+            <Typography variant="caption" sx={{ color: "grey.600", fontWeight: 700 }}>{t("adminRes.step") || "STEP"} {activeStep + 1} {t("adminRes.of") || "OF"} 3</Typography>
           </Box>
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4, "& .MuiStepLabel-label": { mt: 1, fontSize: "0.75rem", fontWeight: 700, color: "grey.600" } }}>
-            {steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
+            {[
+              t("adminRes.step1") || "Basics",
+              t("adminRes.step2") || "Details & Media",
+              t("adminRes.step3") || "Availability"
+            ].map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
           </Stepper>
         </DialogTitle>
         <DialogContent sx={{ px: 4, pb: 2 }}>
@@ -665,18 +683,18 @@ export default function AdminResources() {
         </DialogContent>
         <DialogActions sx={{ px: 4, pb: 5, pt: 3, gap: 2 }}>
           {activeStep === 0 ? (
-            <Button onClick={() => setDialogOpen(false)} sx={{ color: "grey.500" }}>Cancel</Button>
+            <Button onClick={() => setDialogOpen(false)} sx={{ color: "grey.500" }}>{t("adminRes.cancelBtn") || "Cancel"}</Button>
           ) : (
-            <Button startIcon={<NavigateBefore />} onClick={handleBack} sx={{ color: "grey.500" }}>Back</Button>
+            <Button startIcon={<NavigateBefore />} onClick={handleBack} sx={{ color: "grey.500" }}>{t("adminRes.backBtn") || "Back"}</Button>
           )}
           <Box sx={{ flexGrow: 1 }} />
           {activeStep < steps.length - 1 ? (
             <Button variant="contained" endIcon={<NavigateNext />} onClick={handleNext} sx={{ px: 4, borderRadius: 3, fontWeight: 700, background: "linear-gradient(135deg, #7C4DFF, #651FFF)" }}>
-              Continue
+              {t("adminRes.continueBtn") || "Continue"}
             </Button>
           ) : (
             <Button variant="contained" startIcon={<CheckCircle />} onClick={handleSaveResource} disabled={saving} sx={{ px: 4, borderRadius: 3, fontWeight: 900, background: "linear-gradient(135deg, #00E5FF, #00B0FF)", color: "#000" }}>
-              {saving ? <CircularProgress size={24} color="inherit" /> : "Finish & Post"}
+              {saving ? <CircularProgress size={24} color="inherit" /> : (t("adminRes.finishPost") || "Finish & Post")}
             </Button>
           )}
         </DialogActions>
@@ -684,7 +702,7 @@ export default function AdminResources() {
 
       <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2000, flexDirection: "column", gap: 3 }} open={saving}>
         <CircularProgress color="primary" thickness={5} size={60} />
-        <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>Saving listing details...</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>{t("adminRes.savingDetails") || "Saving listing details..."}</Typography>
       </Backdrop>
     </Box>
   );

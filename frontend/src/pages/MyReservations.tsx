@@ -142,6 +142,34 @@ export default function MyReservations() {
                   const startStr = new Date(r.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
                   const endStr = new Date(r.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
+                  const { actualStart, actualEnd } = getReservationDates(r);
+                  const isActive = actualStart <= now && actualEnd >= now;
+                  const isPast = actualEnd < now;
+                  const isUpcoming = actualStart > now;
+
+                  let derivedStatus = r.status || "PENDING";
+                  if (derivedStatus === "PENDING") {
+                    if (isPast) derivedStatus = "PAST";
+                    else if (isActive) derivedStatus = "ACTIVE";
+                    else if (isUpcoming) derivedStatus = "UPCOMING";
+                  }
+
+                  let statusColor = "rgba(255,215,64,0.1)";
+                  let statusTextColor = "#FFD740";
+                  if (derivedStatus === "CHECKED_IN" || derivedStatus === "ACTIVE") {
+                    statusColor = "rgba(105,240,174,0.1)";
+                    statusTextColor = "#69F0AE";
+                  } else if (derivedStatus === "UPCOMING") {
+                    statusColor = "rgba(0,229,255,0.1)";
+                    statusTextColor = "#00E5FF";
+                  } else if (derivedStatus === "PAST" || derivedStatus === "FINISHED") {
+                    statusColor = "rgba(124,77,255,0.1)";
+                    statusTextColor = "#7C4DFF";
+                  } else if (derivedStatus === "CANCELLED") {
+                    statusColor = "rgba(255,82,82,0.1)";
+                    statusTextColor = "#FF5252";
+                  }
+
                   return (
                     <TableRow key={r.reservationId} sx={{ "&:hover": { backgroundColor: "rgba(124,77,255,0.04)" } }}>
                       <TableCell><Box sx={{ display: "flex", alignItems: "center", gap: 1 }}><EventNote sx={{ color: "primary.main", fontSize: 20 }} />{rName}</Box></TableCell>
@@ -149,19 +177,19 @@ export default function MyReservations() {
                       <TableCell>{startStr} - {endStr}</TableCell>
                       <TableCell>
                         <Chip 
-                          label={r.status || "PENDING"} 
+                          label={t(`status.${derivedStatus.toLowerCase()}`) || derivedStatus} 
                           size="small" 
                           sx={{ 
                             fontSize: "0.7rem", 
                             fontWeight: 700,
-                            bgcolor: r.status === "CHECKED_IN" ? "rgba(105,240,174,0.1)" : "rgba(255,215,64,0.1)",
-                            color: r.status === "CHECKED_IN" ? "#69F0AE" : "#FFD740",
+                            bgcolor: statusColor,
+                            color: statusTextColor,
                           }} 
                         />
                       </TableCell>
                       <TableCell>
                         <Chip 
-                          label={r.paymentMethod || "WALLET"} 
+                          label={r.paymentMethod === "CARD" ? (t("detail.cardLabel") || "CARD") : (t("detail.walletLabel") || "WALLET")} 
                           size="small" 
                           variant="outlined"
                           sx={{ 

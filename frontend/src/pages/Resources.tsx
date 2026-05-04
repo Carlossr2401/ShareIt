@@ -74,32 +74,32 @@ export default function Resources() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>{t("resources.title") || "Resources"}</Typography>
-      <Typography variant="body1" color="grey.500" sx={{ mb: 3 }}>Browse and book available resources</Typography>
+      <Typography variant="body1" color="grey.500" sx={{ mb: 3 }}>{t("resources.subtitle") || "Browse and book available resources"}</Typography>
 
       <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
-        <TextField placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} size="small" sx={{ minWidth: 260 }}
+        <TextField placeholder={t("resources.search") || "Search..."} value={search} onChange={(e) => setSearch(e.target.value)} size="small" sx={{ minWidth: 260 }}
           InputProps={{ startAdornment: <InputAdornment position="start"><Search sx={{ color: "grey.600" }} /></InputAdornment> }} />
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Type</InputLabel>
-          <Select value={typeFilter} label="Type" onChange={(e: SelectChangeEvent) => setTypeFilter(e.target.value)}>
-            <MenuItem value="All">All Types</MenuItem>
-            <MenuItem value="Room">Room</MenuItem>
-            <MenuItem value="Laptop">Laptop</MenuItem>
-            <MenuItem value="Projector">Projector</MenuItem>
-            <MenuItem value="Vehicle">Vehicle</MenuItem>
-            <MenuItem value="Whiteboard">Whiteboard</MenuItem>
+          <InputLabel>{t("resources.type") || "Type"}</InputLabel>
+          <Select value={typeFilter} label={t("resources.type") || "Type"} onChange={(e: SelectChangeEvent) => setTypeFilter(e.target.value)}>
+            <MenuItem value="All">{t("resources.allTypes") || "All Types"}</MenuItem>
+            <MenuItem value="Room">{t("resources.room") || "Room"}</MenuItem>
+            <MenuItem value="Laptop">{t("resources.laptop") || "Laptop"}</MenuItem>
+            <MenuItem value="Projector">{t("resources.projector") || "Projector"}</MenuItem>
+            <MenuItem value="Vehicle">{t("resources.vehicle") || "Vehicle"}</MenuItem>
+            <MenuItem value="Whiteboard">{t("resources.whiteboard") || "Whiteboard"}</MenuItem>
           </Select>
         </FormControl>
       </Box>
 
       {/* Date and Time Filters */}
       <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: "wrap", alignItems: "center", backgroundColor: 'rgba(0, 0, 0, 0.02)', p: 2, borderRadius: 2 }}>
-        <Typography variant="body2" fontWeight={600} color="textSecondary" sx={{ mr: 1 }}>Filter Availability:</Typography>
-        <TextField type="date" label="Date" size="small" InputLabelProps={{ shrink: true }} value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+        <Typography variant="body2" fontWeight={600} color="textSecondary" sx={{ mr: 1 }}>{t("resources.filterAvailability") || "Filter Availability:"}</Typography>
+        <TextField type="date" label={t("resources.date") || "Date"} size="small" InputLabelProps={{ shrink: true }} value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
 
         <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>Start Time</InputLabel>
-          <Select value={filterStartTime} label="Start Time" onChange={(e: SelectChangeEvent) => setFilterStartTime(e.target.value)}>
+          <InputLabel>{t("resources.startTime") || "Start Time"}</InputLabel>
+          <Select value={filterStartTime} label={t("resources.startTime") || "Start Time"} onChange={(e: SelectChangeEvent) => setFilterStartTime(e.target.value)}>
             {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`).map((h) => (
               <MenuItem key={h} value={h}>{h}</MenuItem>
             ))}
@@ -107,8 +107,8 @@ export default function Resources() {
         </FormControl>
 
         <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>End Time</InputLabel>
-          <Select value={filterEndTime} label="End Time" onChange={(e: SelectChangeEvent) => setFilterEndTime(e.target.value)}>
+          <InputLabel>{t("resources.endTime") || "End Time"}</InputLabel>
+          <Select value={filterEndTime} label={t("resources.endTime") || "End Time"} onChange={(e: SelectChangeEvent) => setFilterEndTime(e.target.value)}>
             {Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`).map((h) => (
               <MenuItem key={h} value={h}>{h}</MenuItem>
             ))}
@@ -116,10 +116,10 @@ export default function Resources() {
         </FormControl>
 
         <Button variant="contained" color="primary" onClick={handleApplyFilter} disabled={!filterDate || !filterStartTime || !filterEndTime}>
-          Apply Filter
+          {t("resources.applyFilter") || "Apply Filter"}
         </Button>
         <Button variant="outlined" color="inherit" onClick={handleClearFilter} disabled={!filterDate && !filterStartTime && !filterEndTime}>
-          Clear
+          {t("resources.clear") || "Clear"}
         </Button>
       </Box>
 
@@ -142,19 +142,19 @@ export default function Resources() {
                         typeIcons[rType] || typeIcons.Room
                       )}
                     </Box>
-                    <Chip label="Available" size="small" sx={{ backgroundColor: "rgba(105,240,174,0.12)", color: "#69F0AE", fontWeight: 600 }} />
+                    <Chip label={t("resources.available") || "Available"} size="small" sx={{ backgroundColor: "rgba(105,240,174,0.12)", color: "#69F0AE", fontWeight: 600 }} />
                   </Box>
                   <Typography variant="h6" sx={{ mb: 0.5 }}>{resource.name}</Typography>
                   <Typography variant="body2" color="grey.500" sx={{ mb: 1 }}>{resource.location}</Typography>
                   <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", mt: 1 }}>
-                    <Chip label={rType} size="small" variant="outlined" sx={{ borderColor: typeColors[rType], color: typeColors[rType] }} />
+                    <Chip label={t(`resources.${rType.toLowerCase()}`) || rType} size="small" variant="outlined" sx={{ borderColor: typeColors[rType], color: typeColors[rType] }} />
                     <Typography variant="body2" color="primary.light" fontWeight={600}>€{resource.price || 0}</Typography>
-                    <Typography variant="caption" color="grey.500">(+€{resource.deposit || 0} deposit)</Typography>
+                    <Typography variant="caption" color="grey.500">(+€{resource.deposit || 0} {t("resources.deposit") || "deposit"})</Typography>
                   </Box>
                 </CardContent>
                 <CardActions sx={{ px: 2, pb: 2 }}>
                   <Button fullWidth variant="contained" startIcon={<Visibility />} onClick={() => navigate(`/resources/${resource.resourceId}`)}>
-                    View & Book
+                    {t("resources.viewBook") || "View & Book"}
                   </Button>
                 </CardActions>
               </Card>

@@ -282,7 +282,7 @@ export default function ResourceDetail() {
                 <Typography variant="h6" fontWeight={800} sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                     <InfoOutlined color="primary" /> {t("detail.description") || "Resource Overview"}
                 </Typography>
-                <Typography variant="body1" color="grey.400" sx={{ lineHeight: 1.8, fontSize: "1.05rem" }}>{resource.description || "No description provided."}</Typography>
+                <Typography variant="body1" color="grey.400" sx={{ lineHeight: 1.8, fontSize: "1.05rem" }}>{resource.description || t("detail.noDescription") || "No description provided."}</Typography>
               </Box>
               
               {resource.rules && resource.rules.length > 0 && (
@@ -351,7 +351,7 @@ export default function ResourceDetail() {
               <Box sx={{ mb: 4 }}>
                 <Typography variant="subtitle2" sx={{ mb: 2, color: "grey.500", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, display: "flex", alignItems: "center", gap: 1 }}>
                   <AccessTime fontSize="small" sx={{ color: "primary.main" }} /> 
-                  Available slots
+                  {t("detail.availableSlots") || "Available slots"}
                 </Typography>
                 
                 {availableSlots.length > 0 ? (
@@ -388,7 +388,7 @@ export default function ResourceDetail() {
                               }
                             }}
                           >
-                            {isBusy ? `Occupied (${startRaw})` : `${startRaw} - ${endRaw}`}
+                            {isBusy ? `${t("detail.occupied") || "Occupied"} (${startRaw})` : `${startRaw} - ${endRaw}`}
                           </Button>
                         </Grid>
                       );
@@ -396,7 +396,7 @@ export default function ResourceDetail() {
                   </Grid>
                 ) : (
                   <Alert severity="info" variant="outlined" sx={{ borderRadius: 3, borderStyle: 'dashed', color: "grey.500" }}>
-                    Select another date to see availability.
+                    {t("detail.selectAnother") || "Select another date to see availability."}
                   </Alert>
                 )}
               </Box>
@@ -405,7 +405,7 @@ export default function ResourceDetail() {
               <Box sx={{ mb: 4, p: 3, borderRadius: 4, bgcolor: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
                 <Typography variant="subtitle2" sx={{ mb: 2, color: "grey.500", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, display: "flex", alignItems: "center", gap: 1 }}>
                    <Payments fontSize="small" sx={{ color: "success.main" }} />
-                   Payment Method
+                   {t("detail.paymentMethod") || "Payment Method"}
                 </Typography>
                 
                 <RadioGroup 
@@ -432,8 +432,8 @@ export default function ResourceDetail() {
                                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                                         <AccountBalanceWallet sx={{ color: "primary.main" }} />
                                         <Box>
-                                            <Typography variant="body2" fontWeight={700}>Internal Wallet</Typography>
-                                            <Typography variant="caption" color="grey.500">Fast & Secure internal balance</Typography>
+                                            <Typography variant="body2" fontWeight={700}>{t("detail.internalWallet") || "Internal Wallet"}</Typography>
+                                            <Typography variant="caption" color="grey.500">{t("detail.internalWalletDesc") || "Fast & Secure internal balance"}</Typography>
                                         </Box>
                                     </Box>
                                 } 
@@ -459,8 +459,8 @@ export default function ResourceDetail() {
                                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                                         <CreditCard sx={{ color: "#00E5FF" }} />
                                         <Box>
-                                            <Typography variant="body2" fontWeight={700}>Credit / Debit Card</Typography>
-                                            <Typography variant="caption" color="grey.500">Secure simulated gateway</Typography>
+                                            <Typography variant="body2" fontWeight={700}>{t("detail.creditCard") || "Credit / Debit Card"}</Typography>
+                                            <Typography variant="caption" color="grey.500">{t("detail.creditCardDesc") || "Secure simulated gateway"}</Typography>
                                         </Box>
                                     </Box>
                                 } 
@@ -477,15 +477,15 @@ export default function ResourceDetail() {
 
               <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                  <Typography variant="body1" color="grey.500" fontWeight={500}>Item Rental</Typography>
+                  <Typography variant="body1" color="grey.500" fontWeight={500}>{t("detail.itemRental") || "Item Rental"}</Typography>
                   <Typography variant="body1" fontWeight={700}>€{resource.price || 0}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-                  <Typography variant="body1" color="grey.500" fontWeight={500}>Security Deposit</Typography>
+                  <Typography variant="body1" color="grey.500" fontWeight={500}>{t("detail.securityDeposit") || "Security Deposit"}</Typography>
                   <Typography variant="body1" fontWeight={700}>€{resource.deposit || 0}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", p: 2, borderRadius: 3, bgcolor: "rgba(105,240,174,0.05)", border: "1px solid rgba(105,240,174,0.2)" }}>
-                  <Typography variant="h6" fontWeight={800} color="grey.300">Total Price</Typography>
+                  <Typography variant="h6" fontWeight={800} color="grey.300">{t("detail.totalPrice") || "Total Price"}</Typography>
                   <Typography variant="h5" fontWeight={900} color="#69F0AE">€{(resource.deposit || 0) + (resource.price || 0)}</Typography>
                 </Box>
               </Box>
@@ -538,21 +538,21 @@ export default function ResourceDetail() {
             </Box>
             <Typography variant="h5" fontWeight={900}>{t("detail.confirmTitle") || "Final Summary"}</Typography>
           </Box>
-          <Typography variant="body2" color="grey.500">Please review your booking details before confirming.</Typography>
+          <Typography variant="body2" color="grey.500">{t("detail.reviewDetails") || "Please review your booking details before confirming."}</Typography>
         </DialogTitle>
         <DialogContent sx={{ px: 4, pt: 3 }}>
           <Stack spacing={2.5}>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography variant="body1" color="grey.400">Resource</Typography>
+              <Typography variant="body1" color="grey.400">{t("detail.resource") || "Resource"}</Typography>
               <Typography variant="body1" fontWeight={800}>{resource.name}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography variant="body1" color="grey.400">Date</Typography>
+              <Typography variant="body1" color="grey.400">{t("detail.date") || "Date"}</Typography>
               <Typography variant="body1" fontWeight={800}>{dayjs(date).format('MMMM D, YYYY')}</Typography>
             </Box>
             {selectedSlot && (
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body1" color="grey.400">Time</Typography>
+                <Typography variant="body1" color="grey.400">{t("detail.time") || "Time"}</Typography>
                 <Typography variant="body1" fontWeight={800}>
                   {new Date(selectedSlot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
                   {" - "}
@@ -561,17 +561,17 @@ export default function ResourceDetail() {
               </Box>
             )}
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography variant="body1" color="grey.400">Payment via</Typography>
+              <Typography variant="body1" color="grey.400">{t("detail.paymentVia") || "Payment via"}</Typography>
               <Chip 
                 icon={paymentMethod === "CARD" ? <CreditCard fontSize="small" /> : <AccountBalanceWallet fontSize="small" />} 
-                label={paymentMethod} 
+                label={paymentMethod === "CARD" ? (t("detail.cardLabel") || "CARD") : (t("detail.walletLabel") || "WALLET")} 
                 size="small"
                 sx={{ fontWeight: 700, borderRadius: 1.5, bgcolor: paymentMethod === "CARD" ? "rgba(0,229,255,0.1)" : "rgba(124,77,255,0.1)", color: paymentMethod === "CARD" ? "#00E5FF" : "#7C4DFF" }} 
               />
             </Box>
             <Divider sx={{ opacity: 0.1 }} />
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Typography variant="h5" fontWeight={600} color="grey.200">Total Price</Typography>
+              <Typography variant="h5" fontWeight={600} color="grey.200">{t("detail.totalPrice") || "Total Price"}</Typography>
               <Typography variant="h4" fontWeight={900} sx={{ color: "#69F0AE" }}>€{(resource.price || 0) + (resource.deposit || 0)}</Typography>
             </Box>
           </Stack>

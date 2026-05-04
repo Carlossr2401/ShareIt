@@ -180,7 +180,7 @@ export default function Dashboard() {
               
               {recentReservations.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Typography color="grey.600">No tienes reservas recientes</Typography>
+                  <Typography color="grey.600">{t("dashboard.noRecent") || "You have no recent reservations"}</Typography>
                 </Box>
               ) : (
                 recentReservations.map((res, i) => (
@@ -203,7 +203,7 @@ export default function Dashboard() {
                       </Typography>
                     </Box>
                     <Chip 
-                      label={new Date(res.date) < new Date() ? "Finalizada" : "Confirmada"} 
+                      label={new Date(res.date) < new Date() ? (t("dashboard.finished") || "Finished") : (t("dashboard.confirmed") || "Confirmed")} 
                       size="small" 
                       sx={{ 
                         backgroundColor: new Date(res.date) < new Date() ? "rgba(255,255,255,0.05)" : "rgba(105,240,174,0.12)", 
