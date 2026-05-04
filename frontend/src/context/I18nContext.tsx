@@ -119,6 +119,15 @@ const translations: Record<Lang, Record<string, string>> = {
     "reservations.actions": "Actions",
     "reservations.modify": "Modify",
     "reservations.cancel": "Cancel",
+    "reservations.upcoming": "Upcoming",
+    "reservations.active": "Active",
+    "reservations.past": "Past",
+    "reservations.upcomingTab": "Upcoming",
+    "reservations.activeTab": "Active",
+    "reservations.pastTab": "Past",
+    "reservations.noData": "No reservations found in this category.",
+    "reservations.payment": "Payment",
+    "reservations.timeRange": "Time Range",
 
     // Wallet
     "wallet.title": "Wallet",
@@ -297,6 +306,15 @@ const translations: Record<Lang, Record<string, string>> = {
     "reservations.actions": "Acciones",
     "reservations.modify": "Modificar",
     "reservations.cancel": "Cancelar",
+    "reservations.upcoming": "Próximas",
+    "reservations.active": "Activas",
+    "reservations.past": "Pasadas",
+    "reservations.upcomingTab": "Próximas",
+    "reservations.activeTab": "Activas",
+    "reservations.pastTab": "Pasadas",
+    "reservations.noData": "No se encontraron reservas en esta categoría.",
+    "reservations.payment": "Pago",
+    "reservations.timeRange": "Horario",
 
     // Wallet
     "wallet.title": "Monedero",

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Box, Typography, Card, CardContent, Table, TableHead, TableRow,
   TableCell, TableBody, TableContainer, Chip, IconButton, Tooltip, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions, Tabs, Tab
 } from "@mui/material";
 import { Delete, Refresh, EventNote, QrCode2 } from "@mui/icons-material";
 import { QRCodeSVG } from "qrcode.react";
@@ -12,6 +12,31 @@ export default function MyReservations() {
   const { t } = useI18n();
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedQrReservation, setSelectedQrReservation] = useState<any>(null);
+  const [tabValue, setTabValue] = useState(0);
+
+  const getReservationDates = (r: any) => {
+    const rDate = new Date(r.date);
+    const rStart = new Date(r.startTime);
+    const rEnd = new Date(r.endTime);
+    
+    const actualStart = new Date(rDate.getUTCFullYear(), rDate.getUTCMonth(), rDate.getUTCDate(), rStart.getUTCHours(), rStart.getUTCMinutes());
+    const actualEnd = new Date(rDate.getUTCFullYear(), rDate.getUTCMonth(), rDate.getUTCDate(), rEnd.getUTCHours(), rEnd.getUTCMinutes());
+    return { actualStart, actualEnd };
+  };
+
+  const now = new Date();
+  const upcomingReservations = reservations.filter(r => getReservationDates(r).actualStart > now);
+  const activeReservations = reservations.filter(r => {
+    const { actualStart, actualEnd } = getReservationDates(r);
+    return actualStart <= now && actualEnd >= now;
+  });
+  const pastReservations = reservations.filter(r => getReservationDates(r).actualEnd < now);
+
+  const getDisplayedReservations = () => {
+    if (tabValue === 0) return upcomingReservations;
+    if (tabValue === 1) return activeReservations;
+    return pastReservations;
+  };
 
   const fetchReservations = async () => {
     try {
@@ -55,7 +80,9 @@ export default function MyReservations() {
 
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         {[
-          { label: "Total Bookings", count: reservations.length, color: "#7C4DFF" },
+          { label: t("reservations.upcoming") || "Upcoming", count: upcomingReservations.length, color: "#00E5FF" },
+          { label: t("reservations.active") || "Active", count: activeReservations.length, color: "#69F0AE" },
+          { label: t("reservations.past") || "Past", count: pastReservations.length, color: "#7C4DFF" },
         ].map((s) => (
           <Card key={s.label} sx={{ flex: 1, minWidth: 130 }}>
             <CardContent sx={{ py: 2, "&:last-child": { pb: 2 } }}>
@@ -66,19 +93,48 @@ export default function MyReservations() {
         ))}
       </Box>
 
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={(e, newValue) => setTabValue(newValue)} 
+          aria-label="reservation tabs"
+          textColor="primary"
+          indicatorColor="primary"
+        >
+          <Tab label={t("reservations.upcomingTab") || "Upcoming"} />
+          <Tab label={t("reservations.activeTab") || "Active"} />
+          <Tab label={t("reservations.pastTab") || "Past"} />
+        </Tabs>
+      </Box>
+
       <Card>
         <CardContent sx={{ p: 0 }}>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  {["Resource", "Date", "Time Range", "Status", "Payment", "Total", "Actions"].map(h => (
-                    <TableCell key={h} sx={{ fontWeight: 600, color: "grey.400" }}>{h}</TableCell>
+                  {[
+                    t("reservations.resource") || "Resource",
+                    t("reservations.date") || "Date",
+                    t("reservations.timeRange") || "Time Range",
+                    t("reservations.status") || "Status",
+                    t("reservations.payment") || "Payment",
+                    t("reservations.total") || "Total",
+                    t("reservations.actions") || "Actions"
+                  ].map((h, i) => (
+                    <TableCell key={i} sx={{ fontWeight: 600, color: "grey.400" }}>{h}</TableCell>
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {reservations.map((r) => {
+                {getDisplayedReservations().length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: "grey.500" }}>
+                      {t("reservations.noData") || "No reservations found in this category."}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {getDisplayedReservations().map((r) => {
                   const rName = r.resource?.name || "Unknown Resource";
                   const rTotal = r.total_amount || ( (r.resource?.deposit || 0) + (r.resource?.price || 0) );
                   
