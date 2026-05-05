@@ -1,17 +1,20 @@
 import { useState, useEffect } from "react";
 import {
   Box, Typography, Card, CardContent, Table, TableHead, TableRow,
-  TableCell, TableBody, TableContainer, Chip, IconButton, Tooltip, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert as MuiAlert,
+  Button, TableCell, TableBody, TableContainer, Chip, IconButton, Tooltip
 } from "@mui/material";
-import { Delete, Refresh, EventNote, QrCode2 } from "@mui/icons-material";
+import { Delete, Refresh, EventNote, QrCode2, RateReview } from "@mui/icons-material";
 import { QRCodeSVG } from "qrcode.react";
 import { useI18n } from "../context/I18nContext";
+import ReviewModal from "../components/ReviewModal";
 
 export default function MyReservations() {
   const { t } = useI18n();
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedQrReservation, setSelectedQrReservation] = useState<any>(null);
+  const [reviewReservationId, setReviewReservationId] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState(false);
 
   const fetchReservations = async () => {
     try {
@@ -120,6 +123,13 @@ export default function MyReservations() {
                       <TableCell sx={{ fontWeight: 700, color: "#69F0AE" }}>€{rTotal}</TableCell>
                       <TableCell>
                         <Box sx={{ display: "flex", gap: 1 }}>
+                          {(r.status === "CHECKED_IN" || r.status === "COMPLETED") && (
+                            <Tooltip title="Leave a Review">
+                              <IconButton size="small" onClick={() => setReviewReservationId(r.reservationId)} sx={{ color: "#FFD740" }}>
+                                <RateReview fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                           <Tooltip title="Show Check-in QR">
                             <IconButton size="small" onClick={() => setSelectedQrReservation(r)} sx={{ color: "primary.main" }}>
                               <QrCode2 fontSize="small" />
@@ -168,6 +178,23 @@ export default function MyReservations() {
           <Button onClick={() => setSelectedQrReservation(null)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Review Modal */}
+      {reviewReservationId && (
+        <ReviewModal
+          open={!!reviewReservationId}
+          onClose={() => setReviewReservationId(null)}
+          reservationId={reviewReservationId}
+          role="TENANT"
+          onSuccess={() => setSuccessMsg(true)}
+        />
+      )}
+
+      <Snackbar open={successMsg} autoHideDuration={4000} onClose={() => setSuccessMsg(false)}>
+        <MuiAlert severity="success" variant="filled" sx={{ width: "100%" }}>
+          ¡Reseña enviada correctamente!
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
 }

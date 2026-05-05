@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import {
   Box, Typography, Card, CardContent, Table, TableHead, TableRow,
   TableCell, TableBody, TableContainer, Chip, Button, CircularProgress,
-  Divider, IconButton, Tooltip
+  Divider, IconButton, Tooltip, Snackbar, Alert as MuiAlert
 } from "@mui/material";
-import { ArrowBack, CalendarMonth, Person, AccessTime, Payments } from "@mui/icons-material";
+import { ArrowBack, CalendarMonth, Person, AccessTime, Payments, RateReview } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
 import dayjs from "dayjs";
+import ReviewModal from "../components/ReviewModal";
 
 export default function ResourceReservations() {
   const { id } = useParams();
@@ -15,6 +16,8 @@ export default function ResourceReservations() {
   const { t } = useI18n();
   const [resource, setResource] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [reviewReservationId, setReviewReservationId] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState(false);
 
   useEffect(() => {
     const fetchResourceReservations = async () => {
@@ -78,7 +81,9 @@ export default function ResourceReservations() {
                   <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Date</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Slot</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Amount</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Payment</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -114,6 +119,18 @@ export default function ResourceReservations() {
                       </TableCell>
                       <TableCell>
                         <Chip 
+                          label={res.status || "PENDING"} 
+                          size="small" 
+                          sx={{ 
+                            fontSize: "0.7rem", 
+                            fontWeight: 700,
+                            bgcolor: res.status === "CHECKED_IN" ? "rgba(105,240,174,0.1)" : "rgba(255,215,64,0.1)",
+                            color: res.status === "CHECKED_IN" ? "#69F0AE" : "#FFD740",
+                          }} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
                           label={res.paymentMethod || "WALLET"} 
                           size="small" 
                           variant="outlined"
@@ -126,6 +143,15 @@ export default function ResourceReservations() {
                           }} 
                         />
                       </TableCell>
+                      <TableCell>
+                        {(res.status === "CHECKED_IN" || res.status === "COMPLETED") && (
+                          <Tooltip title="Evaluar Arrendatario">
+                            <IconButton size="small" onClick={() => setReviewReservationId(res.reservationId)} sx={{ color: "#FFD740" }}>
+                              <RateReview fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -134,6 +160,23 @@ export default function ResourceReservations() {
           </TableContainer>
         </Card>
       )}
+
+      {/* Review Modal */}
+      {reviewReservationId && (
+        <ReviewModal
+          open={!!reviewReservationId}
+          onClose={() => setReviewReservationId(null)}
+          reservationId={reviewReservationId}
+          role="OWNER"
+          onSuccess={() => setSuccessMsg(true)}
+        />
+      )}
+
+      <Snackbar open={successMsg} autoHideDuration={4000} onClose={() => setSuccessMsg(false)}>
+        <MuiAlert severity="success" variant="filled" sx={{ width: "100%" }}>
+          ¡Reseña enviada correctamente!
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
 }

@@ -19,6 +19,8 @@ model Profile {
   createdAt  DateTime @default(now()) @map("created_at")
 
   reservations Reservation[]
+  reviewsGiven   Review[] @relation("ReviewsGiven")
+  reviewsReceived Review[] @relation("ReviewsReceived")
 
   @@map("profiles")
 }
@@ -76,6 +78,27 @@ model Reservation {
 
   resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
   user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews  Review[] @relation("ReservationReviews")
 
   @@map("reservations")
+}
+
+model Review {
+  id            String      @id @default(uuid()) @db.Uuid
+  reservationId String      @db.Uuid @map("reservation_id")
+  reviewerId    String      @db.Uuid @map("reviewer_id")
+  targetId      String      @db.Uuid @map("target_id")
+  reviewerRole  String      @map("reviewer_role") // "OWNER" or "TENANT"
+  rating        Int         // 1 to 5
+  comment       String?
+  photoUrls     String[]    @default([]) @map("photo_urls")
+
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  reservation   Reservation @relation("ReservationReviews", fields: [reservationId], references: [reservationId], onDelete: Cascade)
+  reviewer      Profile     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  target        Profile     @relation("ReviewsReceived", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([reservationId, reviewerRole])
+  @@map("reviews")
 }
