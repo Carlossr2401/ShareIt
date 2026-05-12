@@ -193,3 +193,63 @@ export const checkInReservation = async (req, res) => {
     res.status(500).json({ error: "Error interno procesando el check-in" });
   }
 };
+
+export const markReservationAsDamaged = async (req, res) => {
+  const { id } = req.params;
+  const { damageReason, damagePenalty } = req.body;
+
+  if (!damagePenalty || damagePenalty < 0) {
+    return res.status(400).json({ error: "La penalización debe ser un valor mayor a 0" });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const reservation = await tx.reservation.findUnique({
+        where: { reservationId: id },
+        include: { user: true, resource: true },
+      });
+
+      if (!reservation) {
+        throw new Error("Reserva no encontrada");
+      }
+
+      if (reservation.isDamaged && reservation.damagePenaltyApplied) {
+        throw new Error("Esta reserva ya ha sido marcada como dañada");
+      }
+
+      // Deduct penalty from user's wallet
+      const userWallet = reservation.user.wallet;
+      if (userWallet < damagePenalty) {
+        throw new Error(
+          `Saldo insuficiente del usuario. Saldo disponible: €${userWallet}, Penalización requerida: €${damagePenalty}`
+        );
+      }
+
+      // Update user's wallet
+      await tx.profile.update({
+        where: { id: reservation.userId },
+        data: { wallet: { decrement: damagePenalty } },
+      });
+
+      // Update reservation with damage info
+      return await tx.reservation.update({
+        where: { reservationId: id },
+        data: {
+          isDamaged: true,
+          damageReason: damageReason || "Dañado/Sucio",
+          damagePenalty: damagePenalty,
+          damagePenaltyApplied: true,
+        },
+        include: { user: true, resource: true },
+      });
+    });
+
+    res.json({
+      message: "Artículo marcado como dañado/sucio. Penalización aplicada.",
+      reservation: result,
+    });
+  } catch (error) {
+    console.error("Error al marcar como dañado:", error.message);
+    res.status(400).json({ error: error.message || "No se pudo marcar como dañado" });
+  }
+};

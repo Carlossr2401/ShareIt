@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import {
   Box, Typography, Card, CardContent, Table, TableHead, TableRow,
   TableCell, TableBody, TableContainer, Chip, IconButton, Tooltip, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions, Tabs, Tab
+  Dialog, DialogTitle, DialogContent, DialogActions, Tabs, Tab, Badge
 } from "@mui/material";
-import { Delete, Refresh, EventNote, QrCode2 } from "@mui/icons-material";
+import { Delete, Refresh, EventNote, QrCode2, WarningAmber } from "@mui/icons-material";
 import { QRCodeSVG } from "qrcode.react";
 import { useI18n } from "../context/I18nContext";
 
@@ -119,6 +119,7 @@ export default function MyReservations() {
                     t("reservations.timeRange") || "Time Range",
                     t("reservations.status") || "Status",
                     t("reservations.payment") || "Payment",
+                    "Penalties",
                     t("reservations.total") || "Total",
                     t("reservations.actions") || "Actions"
                   ].map((h, i) => (
@@ -129,7 +130,7 @@ export default function MyReservations() {
               <TableBody>
                 {getDisplayedReservations().length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: "grey.500" }}>
+                    <TableCell colSpan={8} align="center" sx={{ py: 4, color: "grey.500" }}>
                       {t("reservations.noData") || "No reservations found in this category."}
                     </TableCell>
                   </TableRow>
@@ -200,6 +201,17 @@ export default function MyReservations() {
                             bgcolor: r.paymentMethod === "CARD" ? "rgba(0,229,255,0.05)" : "rgba(124,77,255,0.05)"
                           }} 
                         />
+                      </TableCell>
+                      <TableCell>
+                        {r.isDamaged ? (
+                          <Tooltip title={r.damageReason || "Damage penalty applied"}>
+                            <Badge badgeContent={`€${r.damagePenalty}`} color="error">
+                              <WarningAmber sx={{ color: "#FF5252" }} />
+                            </Badge>
+                          </Tooltip>
+                        ) : (
+                          <Typography variant="body2" color="grey.500">-</Typography>
+                        )}
                       </TableCell>
                       <TableCell sx={{ fontWeight: 700, color: "#69F0AE" }}>€{rTotal}</TableCell>
                       <TableCell>

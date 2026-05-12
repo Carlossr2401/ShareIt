@@ -71,6 +71,11 @@ model Reservation {
   total_amount   Float    @default(0) @map("total_amount")
   status        String   @default("PENDING") // PENDING, CHECKED_IN, COMPLETED, CANCELLED
 
+  isDamaged      Boolean  @default(false) @map("is_damaged")
+  damageReason   String?  @map("damage_reason")
+  damagePenalty  Float    @default(0) @map("damage_penalty")
+  damagePenaltyApplied Boolean @default(false) @map("damage_penalty_applied")
+
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
 

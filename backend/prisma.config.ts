@@ -10,7 +10,7 @@ import { defineConfig } from "prisma/config";
 
 dotenv.config({ override: true });
 
-const schemaUrl = process.env["DIRECT_URL"] || process.env["DATABASE_URL"];
+const schemaUrl = process.env["DATABASE_URL"] || process.env["DIRECT_URL"];
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

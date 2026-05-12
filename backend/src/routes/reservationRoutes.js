@@ -5,6 +5,7 @@ import {
   deleteReservation,
   getAllReservations,
   checkInReservation,
+  markReservationAsDamaged,
 } from "../controllers/reservationController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
@@ -142,6 +143,43 @@ router.get("/me", getUserReservations);
  *         description: Reserva no encontrada
  */
 router.post("/:id/checkin", checkInReservation);
+
+/**
+ * @swagger
+ * /reservations/{id}/damage:
+ *   put:
+ *     summary: Marca una reserva como dañada/sucia y aplica penalización
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - damagePenalty
+ *             properties:
+ *               damageReason:
+ *                 type: string
+ *                 example: "Rayones en la superficie"
+ *               damagePenalty:
+ *                 type: number
+ *                 example: 25.50
+ *     responses:
+ *       200:
+ *         description: Artículo marcado como dañado exitosamente
+ *       400:
+ *         description: Error al procesar la penalización
+ *       404:
+ *         description: Reserva no encontrada
+ */
+router.put("/:id/damage", markReservationAsDamaged);
 
 /**
  * @swagger
