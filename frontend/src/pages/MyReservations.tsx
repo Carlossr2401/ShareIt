@@ -25,12 +25,13 @@ export default function MyReservations() {
   };
 
   const now = new Date();
-  const upcomingReservations = reservations.filter(r => getReservationDates(r).actualStart > now);
-  const activeReservations = reservations.filter(r => {
+  const visibleReservations = reservations.filter((r) => r.status !== "CANCELLED");
+  const upcomingReservations = visibleReservations.filter(r => getReservationDates(r).actualStart > now);
+  const activeReservations = visibleReservations.filter(r => {
     const { actualStart, actualEnd } = getReservationDates(r);
     return actualStart <= now && actualEnd >= now;
   });
-  const pastReservations = reservations.filter(r => getReservationDates(r).actualEnd < now);
+  const pastReservations = visibleReservations.filter(r => getReservationDates(r).actualEnd < now);
 
   const getDisplayedReservations = () => {
     if (tabValue === 0) return upcomingReservations;
@@ -146,6 +147,7 @@ export default function MyReservations() {
                   const isActive = actualStart <= now && actualEnd >= now;
                   const isPast = actualEnd < now;
                   const isUpcoming = actualStart > now;
+                  const isCancelable = isUpcoming && r.status !== "CANCELLED";
 
                   let derivedStatus = r.status || "PENDING";
                   if (derivedStatus === "PENDING") {
@@ -209,11 +211,13 @@ export default function MyReservations() {
                               <QrCode2 fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Cancel Booking">
-                            <IconButton size="small" onClick={() => handleCancel(r.reservationId)} sx={{ color: "error.main" }}>
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                          {isCancelable && (
+                            <Tooltip title={t("reservations.cancel") || "Cancel"}>
+                              <IconButton size="small" onClick={() => handleCancel(r.reservationId)} sx={{ color: "error.main" }}>
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Box>
                       </TableCell>
                     </TableRow>
