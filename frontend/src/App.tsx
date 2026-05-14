@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
 import ResourceDetail from "./pages/ResourceDetail";
@@ -31,6 +33,8 @@ export default function App() {
       {/* Auth pages (no sidebar) */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Main app (with sidebar layout) */}
       <Route

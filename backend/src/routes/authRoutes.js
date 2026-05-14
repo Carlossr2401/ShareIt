@@ -1,5 +1,5 @@
 import express from "express";
-import { signup, login, logout, getMe, topUpWallet } from "../controllers/authController.js";
+import { signup, login, logout, getMe, topUpWallet, requestPasswordReset, resetPassword } from "../controllers/authController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -132,5 +132,61 @@ router.get("/me", requireAuth, getMe);
  *         description: Error al procesar la recarga
  */
 router.post("/topup", requireAuth, topUpWallet);
+
+/**
+ * @swagger
+ * /auth/request-reset:
+ *   post:
+ *     summary: Solicitar un reset de contraseña
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Solicitud procesada
+ *       400:
+ *         description: Email inválido
+ */
+router.post("/request-reset", requestPasswordReset);
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     summary: Resetear la contraseña con token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - resetToken
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *               resetToken:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada exitosamente
+ *       400:
+ *         description: Token inválido o expirado
+ */
+router.post("/reset-password", resetPassword);
 
 export default router;
