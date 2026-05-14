@@ -77,7 +77,7 @@ export const createReservation = async (req, res) => {
           startTime: reservationStartTime,
           endTime: reservationEndTime,
           paymentMethod: paymentMethod,
-          total_price: total_amount
+          total_amount: total_amount
         },
       });
     });

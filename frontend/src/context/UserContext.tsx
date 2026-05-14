@@ -41,7 +41,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // El rol de admin suele venir en app_metadata si lo consultáramos a Supabase,
         // pero aquí podríamos verificarlo si el backend lo incluyera o si lo tenemos en el perfil.
         // Por ahora mantenemos la lógica de verificación si existe userData (por compatibilidad o cambios futuros)
-        if (data.role === "admin" || data.app_metadata?.role === "admin") {
+        if (data.role?.toLowerCase() === "admin" || data.app_metadata_role === "admin") {
           setRole("admin");
         }
       } else {

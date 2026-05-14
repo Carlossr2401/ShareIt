@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/authRoutes.js";
 import resourceRoutes from "./src/routes/resourceRoutes.js";
 import reservationRoutes from "./src/routes/reservationRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
 import { setupSwagger } from "./src/config/swagger.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -38,6 +39,7 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/resources", resourceRoutes);
 app.use("/reservations", reservationRoutes);
+app.use("/users", userRoutes);
 
 // Error handling middleware (Good practice)
 app.use((err, req, res, next) => {

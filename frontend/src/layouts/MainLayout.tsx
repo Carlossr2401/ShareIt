@@ -25,6 +25,7 @@ import {
   Logout,
   Inventory2,
   Settings,
+  People,
 } from "@mui/icons-material";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
@@ -67,6 +68,11 @@ export default function MainLayout() {
       text: t("nav.allReservations") || "All Reservations",
       icon: <ListAlt />,
       path: "/admin/reservations",
+    },
+    {
+      text: t("nav.users") || "Users",
+      icon: <People />,
+      path: "/admin/users",
     },
   ];
 

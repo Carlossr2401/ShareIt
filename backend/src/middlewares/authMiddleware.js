@@ -1,4 +1,5 @@
 import { supabase } from "../config/supabaseClient.js";
+import { prisma } from "../config/prismaClient.js";
 
 export const requireAuth = async (req, res, next) => {
   try {
@@ -63,5 +64,23 @@ export const requireAuth = async (req, res, next) => {
   } catch (error) {
     console.error("Error en middleware de autenticación:", error);
     res.status(500).json({ error: "Error en el servidor al autenticar" });
+  }
+};
+
+export const isAdmin = async (req, res, next) => {
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { id: req.user.id },
+      select: { role: true },
+    });
+
+    if (!profile || profile.role !== "ADMIN") {
+      return res.status(403).json({ error: "No tienes permisos de administrador" });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error al verificar rol de administrador:", error);
+    res.status(500).json({ error: "Error al verificar permisos" });
   }
 };

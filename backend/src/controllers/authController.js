@@ -176,7 +176,7 @@ export const getMe = async (req, res) => {
 
     res.status(200).json({
       ...profile,
-      role: req.user.app_metadata?.role || "user"
+      app_metadata_role: req.user.app_metadata?.role || "user"
     });
   } catch (error) {
     console.error("Error en getMe:", error);
