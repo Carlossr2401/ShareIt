@@ -16,9 +16,11 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Alert,
+  CircularProgress,
   type SelectChangeEvent,
 } from "@mui/material";
-import { Search, CalendarMonth } from "@mui/icons-material";
+import { Search, CalendarMonth, WarningAmber } from "@mui/icons-material";
 import dayjs, { type Dayjs } from "dayjs";
 import { useI18n } from "../context/I18nContext";
 
@@ -66,6 +68,8 @@ export default function AdminMasterCalendar() {
   const [resourceFilter, setResourceFilter] = useState("All");
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [resources, setResources] = useState<Set<string>>(new Set());
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const fetchReservations = async () => {
     try {
@@ -93,7 +97,32 @@ export default function AdminMasterCalendar() {
     } catch (error) {
       console.error("Error fetching reservations:", error);
     } finally {
-      setLoading(false);
+    
+
+  const handleResetSystem = async () => {
+    try {
+      setResetting(true);
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const res = await fetch(`${API_URL}/reservations/admin/reset`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        setResetDialogOpen(false);
+        await fetchReservations();
+        alert(t("admin.masterCalendar.resetSuccess") || "System has been reset successfully! All reservations have been cleared.");
+      } else {
+        const error = await res.json();
+        alert(t("admin.masterCalendar.resetError") || "Error resetting system: " + error.error);
+      }
+    } catch (error) {
+      console.error("Error resetting system:", error);
+      alert(t("admin.masterCalendar.resetError") || "Error resetting system");
+    } finally {
+      setResetting(false);
+    }
+  };  setLoading(false);
     }
   };
 
@@ -141,7 +170,16 @@ export default function AdminMasterCalendar() {
   };
 
   const getDisplayTimeFromDate = (timeStr: string): string => {
-    try {
+    tr  <Button
+          variant="outlined"
+          color="error"
+          startIcon={<WarningAmber />}
+          onClick={() => setResetDialogOpen(true)}
+          disabled={resetting}
+        >
+          {t("admin.masterCalendar.resetSystem") || "Reset System"}
+        </Button>
+      y {
       const date = new Date(timeStr);
       return date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
     } catch {
@@ -371,7 +409,40 @@ export default function AdminMasterCalendar() {
                     {t("admin.masterCalendar.status") || "Status"}
                   </Typography>
                   <Box sx={{ mt: 0.5 }}>
-                    <Chip
+          Reset System Confirmation Dialog */}
+      <Dialog open={resetDialogOpen} onClose={() => !resetting && setResetDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, color: "error.main" }}>
+          <WarningAmber />
+          {t("admin.masterCalendar.resetConfirm") || "Reset System"}
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {t("admin.masterCalendar.resetWarning") || "This action cannot be undone. All reservations will be permanently deleted."}
+          </Alert>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {t("admin.masterCalendar.resetDescription") || "This will clear all dummy bookings and reset the system to a fresh state. This is useful for starting a new demonstration."}
+          </Typography>
+          <Typography variant="body2" color="error" sx={{ fontWeight: 600 }}>
+            {t("admin.masterCalendar.resetDeleteCount") || `You are about to delete ${reservations.length} reservation(s).`}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetDialogOpen(false)} disabled={resetting}>
+            {t("admin.masterCalendar.cancel") || "Cancel"}
+          </Button>
+          <Button
+            onClick={handleResetSystem}
+            color="error"
+            variant="contained"
+            disabled={resetting}
+            startIcon={resetting ? <CircularProgress size={20} /> : undefined}
+          >
+            {resetting ? (t("admin.masterCalendar.resetting") || "Resetting...") : (t("admin.masterCalendar.deleteAll") || "Delete All")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/*           <Chip
                       label={selectedReservation.status}
                       size="small"
                       sx={{

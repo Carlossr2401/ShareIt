@@ -229,3 +229,17 @@ export const checkInReservation = async (req, res) => {
     res.status(500).json({ error: "Error interno procesando el check-in" });
   }
 };
+
+export const resetSystem = async (req, res) => {
+  try {
+    const deletedCount = await prisma.reservation.deleteMany({});
+
+    res.json({
+      message: "Sistema reiniciado exitosamente. Todas las reservas han sido eliminadas.",
+      deletedReservations: deletedCount.count,
+    });
+  } catch (error) {
+    console.error("Error al reiniciar el sistema:", error);
+    res.status(500).json({ error: "Error al reiniciar el sistema" });
+  }
+};

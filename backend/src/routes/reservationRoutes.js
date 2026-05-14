@@ -5,6 +5,7 @@ import {
   deleteReservation,
   getAllReservations,
   checkInReservation,
+  resetSystem,
 } from "../controllers/reservationController.js";
 import { requireAuth, requireAdmin } from "../middlewares/authMiddleware.js";
 
@@ -166,5 +167,19 @@ router.post("/:id/checkin", checkInReservation);
  *         description: Reserva no encontrada
  */
 router.delete("/:id", deleteReservation);
+
+/**
+ * @swagger
+ * /reservations/admin/reset:
+ *   post:
+ *     summary: Reinicia el sistema eliminando todas las reservas (solo para admin)
+ *     tags: [Reservations]
+ *     responses:
+ *       200:
+ *         description: Sistema reiniciado exitosamente
+ *       403:
+ *         description: Acceso denegado - se requieren permisos de administrador
+ */
+router.post("/admin/reset", requireAdmin, resetSystem);
 
 export default router;
