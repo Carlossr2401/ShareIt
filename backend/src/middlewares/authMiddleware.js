@@ -65,3 +65,28 @@ export const requireAuth = async (req, res, next) => {
     res.status(500).json({ error: "Error en el servidor al autenticar" });
   }
 };
+
+export const requireAdmin = async (req, res, next) => {
+  try {
+    // Verify that requireAuth has already been called
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ error: "No autorizado, no hay sesión activa" });
+    }
+
+    // Check if user is admin by verifying Supabase app_metadata
+    const isAdmin = req.user.app_metadata?.role === "admin";
+
+    if (!isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "Acceso denegado: se requieren permisos de administrador" });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error en middleware de verificación de admin:", error);
+    res.status(500).json({ error: "Error en el servidor al verificar permisos" });
+  }
+};

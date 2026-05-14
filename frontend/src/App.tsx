@@ -9,6 +9,7 @@ import MyReservations from "./pages/MyReservations";
 import Wallet from "./pages/Wallet";
 import AdminResources from "./pages/AdminResources";
 import AdminReservations from "./pages/AdminReservations";
+import AdminMasterCalendar from "./pages/AdminMasterCalendar";
 import ResourceReservations from "./pages/ResourceReservations";
 import CheckIn from "./pages/CheckIn";
 
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/my-listings" element={<AdminResources />} />
         <Route path="/admin/resources" element={<AdminResources />} />
+        <Route path="/admin/master-calendar" element={<AdminMasterCalendar />} />
         <Route path="/admin/reservations" element={<AdminReservations />} />
         <Route path="/resources/:id/reservations" element={<ResourceReservations />} />
         <Route path="/checkin/:id" element={<CheckIn />} />

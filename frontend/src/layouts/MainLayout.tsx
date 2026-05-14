@@ -25,6 +25,7 @@ import {
   Logout,
   Inventory2,
   Settings,
+  CalendarMonth,
 } from "@mui/icons-material";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
@@ -58,6 +59,11 @@ export default function MainLayout() {
   ];
 
   const adminItems = [
+    {
+      text: t("nav.masterCalendar") || "Master Calendar",
+      icon: <CalendarMonth />,
+      path: "/admin/master-calendar",
+    },
     {
       text: t("nav.manageResources") || "Platform Resources",
       icon: <AdminPanelSettings />,
