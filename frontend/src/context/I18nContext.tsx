@@ -15,6 +15,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.resources": "Resources",
     "nav.myReservations": "My Reservations",
     "nav.wallet": "Wallet",
+    "nav.favorites": "Favorites",
     "nav.admin": "Admin",
     "nav.manageResources": "Manage Resources",
     "nav.allReservations": "All Reservations",
@@ -184,6 +185,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "role.admin": "Admin",
     "role.user": "User",
     "role.switchTo": "Switch to",
+
+    // Favorites
+    "favorites.title": "My Favorites",
+    "favorites.noFavorites": "You haven't added any favorites yet.",
   },
   es: {
     // Sidebar
@@ -191,6 +196,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.resources": "Recursos",
     "nav.myReservations": "Mis Reservas",
     "nav.wallet": "Monedero",
+    "nav.favorites": "Favoritos",
     "nav.admin": "Admin",
     "nav.manageResources": "Gestionar Recursos",
     "nav.allReservations": "Todas las Reservas",
@@ -359,6 +365,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "role.admin": "Admin",
     "role.user": "Usuario",
     "role.switchTo": "Cambiar a",
+
+    // Favoritos
+    "favorites.title": "Mis Favoritos",
+    "favorites.noFavorites": "Aún no has añadido ningún favorito.",
   },
 };
 

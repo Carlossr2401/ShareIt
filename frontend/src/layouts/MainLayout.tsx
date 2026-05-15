@@ -25,6 +25,7 @@ import {
   Logout,
   Inventory2,
   Settings,
+  Favorite,
 } from "@mui/icons-material";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
@@ -47,6 +48,7 @@ export default function MainLayout() {
       path: "/reservations",
     },
     { text: t("nav.wallet") || "Wallet", icon: <AccountBalanceWallet />, path: "/wallet" },
+    { text: t("nav.favorites") || "Favorites", icon: <Favorite />, path: "/favorites" },
   ];
 
   const listingItems = [
@@ -317,4 +319,3 @@ export default function MainLayout() {
     </Box>
   );
 }
-

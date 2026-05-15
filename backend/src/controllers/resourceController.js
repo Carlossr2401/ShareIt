@@ -87,6 +87,23 @@ export const getResources = async (req, res) => {
       });
     }
 
+    // Si el usuario está logueado, marcamos cuáles son sus favoritos
+    if (req.user) {
+      try {
+        const userFavorites = await prisma.favorite.findMany({
+          where: { userId: req.user.id },
+          select: { resourceId: true }
+        });
+        const favIds = new Set(userFavorites.map(f => f.resourceId));
+        resources = resources.map(r => ({
+          ...r,
+          isFavorite: favIds.has(r.resourceId)
+        }));
+      } catch (favError) {
+        console.error("Error al obtener favoritos:", favError.message);
+      }
+    }
+
     res.json(resources);
   } catch (error) {
     console.error("Error al obtener recursos:", error);
@@ -126,7 +143,25 @@ export const getResourceById = async (req, res) => {
       return res.status(404).json({ error: "Recurso no encontrado" });
     }
 
-    res.json(resource);
+    let isFavorite = false;
+    if (req.user) {
+      try {
+        if (prisma.favorite) { // Verificar si prisma.favorite existe
+          const fav = await prisma.favorite.findUnique({
+            where: {
+              userId_resourceId: { userId: req.user.id, resourceId: id }
+            }
+          });
+          isFavorite = !!fav;
+        } else {
+          console.warn("Prisma Client no tiene el modelo 'favorite'. ¿Ejecutaste 'npx prisma generate'?");
+        }
+      } catch (favError) {
+        console.error("Error al obtener favorito por ID (posible falta de migración o cliente Prisma):", favError.message);
+      }
+    }
+
+    res.json({ ...resource, isFavorite });
   } catch (error) {
     console.error("Error al obtener el recurso:", error);
     res.status(500).json({ error: "Error interno del servidor" });
@@ -388,3 +423,71 @@ export const removeAvailability = async (req, res) => {
   }
 };
 
+// Alternar favorito (si existe lo quita, si no lo añade)
+export const toggleFavorite = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    if (!prisma.favorite) {
+      throw new Error("MODEL_NOT_FOUND");
+    }
+
+    const existing = await prisma.favorite.findUnique({
+      where: {
+        userId_resourceId: { userId, resourceId: id }
+      }
+    });
+
+    if (existing) {
+      await prisma.favorite.delete({
+        where: {
+          userId_resourceId: { userId, resourceId: id }
+        }
+      });
+      return res.json({ isFavorite: false });
+    }
+
+    await prisma.favorite.create({
+      data: { userId, resourceId: id }
+    });
+    res.json({ isFavorite: true });
+  } catch (error) {
+    console.error("Error al gestionar favorito:", error);
+    
+    if (error.message === "MODEL_NOT_FOUND" || error.code === 'P2021') {
+      return res.status(503).json({ error: "La base de datos de favoritos no está lista. Ejecuta las migraciones." });
+    }
+    
+    if (error.code === 'P1001') {
+      return res.status(503).json({ error: "No se puede conectar a la base de datos. Revisa tu conexión de red." });
+    }
+
+    res.status(500).json({ error: "Error interno al procesar el favorito" });
+  }
+};
+
+// Obtener recursos favoritos del usuario
+export const getMyFavorites = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    if (!prisma.favorite || typeof prisma.favorite.findMany !== 'function') {
+      console.error("Prisma Client no tiene el modelo 'favorite'. No se pueden obtener los favoritos.");
+      return res.json([]); // Devolver lista vacía si la funcionalidad no está disponible
+    }
+
+    const favorites = await prisma.favorite.findMany({
+      where: { userId },
+      include: { resource: { include: { availabilities: true } } }
+    });
+    res.json(favorites.map(f => f.resource));
+  } catch (error) {
+    console.error("Error al obtener favoritos:", error);
+    
+    if (error.code === 'P2021' || error.code === 'P1001') {
+      return res.json([]); // Devolvemos lista vacía si hay problemas de red/esquema
+    }
+
+    res.status(500).json({ error: "No se pudieron obtener los favoritos" });
+  }
+};

@@ -5,9 +5,10 @@ import {
   TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel,
   type SelectChangeEvent,
 } from "@mui/material";
-import { Search, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, Visibility } from "@mui/icons-material";
+import { Search, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, Visibility, Favorite } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
+import FavoriteButton from "../context/FavoriteButton";
 
 const typeIcons: Record<string, React.ReactNode> = {
   Room: <MeetingRoom />, Laptop: <Laptop />, Projector: <Tv />, Vehicle: <DirectionsCar />, Whiteboard: <Brush />,
@@ -39,7 +40,9 @@ export default function Resources() {
         url += `?${params.toString()}`;
       }
 
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        credentials: "include"
+      });
       if (res.ok) {
         const data = await res.json();
         setResources(data);
@@ -90,6 +93,15 @@ export default function Resources() {
             <MenuItem value="Whiteboard">Whiteboard</MenuItem>
           </Select>
         </FormControl>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<Favorite />}
+          onClick={() => navigate("/favorites")}
+          sx={{ borderRadius: 2, ml: { xs: 0, sm: "auto" } }}
+        >
+          {t("nav.favorites")}
+        </Button>
       </Box>
 
       {/* Date and Time Filters */}
@@ -128,7 +140,7 @@ export default function Resources() {
           const rType = resource.category || "Room";
           return (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={resource.resourceId}>
-              <Card sx={{ height: "100%", display: "flex", flexDirection: "column", transition: "transform 0.2s, box-shadow 0.2s", "&:hover": { transform: "translateY(-4px)", boxShadow: `0 8px 24px ${typeColors[rType]}22` } }}>
+              <Card sx={{ height: "100%", display: "flex", flexDirection: "column", position: "relative", transition: "transform 0.2s, box-shadow 0.2s", "&:hover": { transform: "translateY(-4px)", boxShadow: `0 8px 24px ${typeColors[rType]}22` } }}>
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
                     <Box sx={{ width: 48, height: 48, borderRadius: 2.5, display: "flex", alignItems: "center", justifyContent: "center", background: `${typeColors[rType]}18`, color: typeColors[rType], overflow: "hidden" }}>
@@ -152,8 +164,11 @@ export default function Resources() {
                     <Typography variant="caption" color="grey.500">(+€{resource.deposit || 0} deposit)</Typography>
                   </Box>
                 </CardContent>
-                <CardActions sx={{ px: 2, pb: 2 }}>
-                  <Button fullWidth variant="contained" startIcon={<Visibility />} onClick={() => navigate(`/resources/${resource.resourceId}`)}>
+                <CardActions sx={{ px: 2, pb: 2, justifyContent: "space-between", alignItems: "center" }}>
+                  <Box sx={{ bgcolor: "rgba(255,255,255,0.05)", borderRadius: "50%" }}>
+                    <FavoriteButton resourceId={resource.resourceId} initialIsFavorite={resource.isFavorite} />
+                  </Box>
+                  <Button variant="contained" startIcon={<Visibility />} onClick={() => navigate(`/resources/${resource.resourceId}`)} sx={{ borderRadius: 2 }}>
                     View & Book
                   </Button>
                 </CardActions>
