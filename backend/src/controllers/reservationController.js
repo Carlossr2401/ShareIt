@@ -1,5 +1,19 @@
 import { prisma } from "../config/prismaClient.js";
 
+const getReservationStartDateTime = (reservationDate, reservationStartTime) => {
+  return new Date(
+    Date.UTC(
+      reservationDate.getUTCFullYear(),
+      reservationDate.getUTCMonth(),
+      reservationDate.getUTCDate(),
+      reservationStartTime.getUTCHours(),
+      reservationStartTime.getUTCMinutes(),
+      reservationStartTime.getUTCSeconds(),
+      reservationStartTime.getUTCMilliseconds(),
+    ),
+  );
+};
+
 export const createReservation = async (req, res) => {
   const { resourceId, date, startTime, endTime, paymentMethod = "WALLET" } = req.body;
   const user_id = req.user.id;
@@ -58,6 +72,7 @@ export const createReservation = async (req, res) => {
         where: {
           resourceId: resourceId,
           date: reservationDate,
+          status: { not: "CANCELLED" },
           AND: [
             { startTime: { lt: reservationEndTime } },
             { endTime: { gt: reservationStartTime } },
@@ -124,22 +139,39 @@ export const deleteReservation = async (req, res) => {
       if (!reservation) throw new Error("Reserva no encontrada");
       if (reservation.userId !== user_id)
         throw new Error("No tienes permiso para cancelar esta reserva");
+      if (reservation.status === "CANCELLED")
+        throw new Error("La reserva ya fue cancelada");
+      if (reservation.status === "CHECKED_IN" || reservation.status === "COMPLETED")
+        throw new Error("La reserva ya no puede cancelarse");
+
+      const reservationStart = getReservationStartDateTime(
+        reservation.date,
+        reservation.startTime,
+      );
+
+      if (reservationStart <= new Date()) {
+        throw new Error("Solo puedes cancelar reservas antes de su hora de inicio");
+      }
 
       await tx.profile.update({
         where: { id: user_id },
         data: {
           wallet: {
-            increment: reservation.resource.deposit,
+            increment: reservation.resource.deposit ?? 0,
           },
         },
       });
 
-      return await tx.reservation.delete({
+      return await tx.reservation.update({
         where: { reservationId: id },
+        data: { status: "CANCELLED" },
       });
     });
 
-    res.json({ message: "Reserva cancelada y depósito devuelto a tu Wallet" });
+    res.json({
+      message: "Reserva cancelada y depósito devuelto a tu Wallet",
+      reservation: result,
+    });
   } catch (error) {
     console.error("Error al cancelar la reserva:", error.message);
     res
@@ -180,6 +212,10 @@ export const checkInReservation = async (req, res) => {
 
     if (reservation.status === "CHECKED_IN") {
       return res.status(400).json({ error: "El check-in ya fue realizado previamente" });
+    }
+
+    if (reservation.status === "CANCELLED") {
+      return res.status(400).json({ error: "La reserva fue cancelada" });
     }
 
     const updated = await prisma.reservation.update({

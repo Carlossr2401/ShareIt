@@ -46,6 +46,7 @@ export const getResources = async (req, res) => {
             date: requestedDate,
             startTime: { lt: reqEnd },
             endTime: { gt: reqStart },
+            status: { not: "CANCELLED" },
           },
         },
       };
@@ -119,6 +120,7 @@ export const getResourceById = async (req, res) => {
       include: {
         availabilities: true,
         reservations: {
+          where: { status: { not: "CANCELLED" } },
           include: {
             user: true,
           },

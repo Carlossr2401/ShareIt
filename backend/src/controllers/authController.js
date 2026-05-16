@@ -206,3 +206,114 @@ export const topUpWallet = async (req, res) => {
     res.status(500).json({ error: "No se pudo realizar la recarga" });
   }
 };
+
+// Generar un token de reset aleatorio
+const generateResetToken = () => {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
+export const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "El email es requerido" });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Formato de email inválido" });
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { email: email },
+    });
+
+    if (!profile) {
+      // Por seguridad, no revelar si el email existe o no
+      return res.status(200).json({
+        message: "Si el email existe en el sistema, recibirá un enlace para resetear la contraseña",
+      });
+    }
+
+    // Generar token válido por 1 hora
+    const resetToken = generateResetToken();
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
+
+    await prisma.profile.update({
+      where: { email: email },
+      data: {
+        resetToken: resetToken,
+        resetTokenExpiry: resetTokenExpiry,
+      },
+    });
+
+    // Mock: en un sistema real, aquí se enviaría un email
+    console.log(`[MOCK] Reset token para ${email}: ${resetToken}`);
+    console.log(`[MOCK] Token válido hasta: ${resetTokenExpiry.toISOString()}`);
+
+    res.status(200).json({
+      message: "Si el email existe en el sistema, recibirá un enlace para resetear la contraseña",
+      // Solo en desarrollo: devolver el token para testing
+      ...(process.env.NODE_ENV !== "production" && { resetToken, resetTokenExpiry }),
+    });
+  } catch (error) {
+    console.error("Error en requestPasswordReset:", error);
+    res.status(500).json({ error: "Error al procesar la solicitud" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, resetToken, newPassword } = req.body;
+
+    if (!email || !resetToken || !newPassword) {
+      return res.status(400).json({ error: "Email, token y nueva contraseña son requeridos" });
+    }
+
+    if (!isValidPassword(newPassword)) {
+      return res.status(400).json({
+        error: "La contraseña debe tener entre 6 y 12 caracteres y no contener espacios",
+      });
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { email: email },
+    });
+
+    if (!profile) {
+      return res.status(400).json({ error: "Usuario no encontrado" });
+    }
+
+    if (!profile.resetToken || profile.resetToken !== resetToken) {
+      return res.status(400).json({ error: "Token inválido o expirado" });
+    }
+
+    if (!profile.resetTokenExpiry || profile.resetTokenExpiry < new Date()) {
+      return res.status(400).json({ error: "El token ha expirado" });
+    }
+
+    // Actualizar contraseña en Supabase
+    const { error } = await supabase.auth.admin.updateUserById(profile.id, {
+      password: newPassword,
+    });
+
+    if (error) {
+      console.error("Error actualizando contraseña en Supabase:", error);
+      return res.status(500).json({ error: "Error al actualizar la contraseña" });
+    }
+
+    // Limpiar el token de reset
+    await prisma.profile.update({
+      where: { email: email },
+      data: {
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    res.status(200).json({ message: "Contraseña actualizada exitosamente" });
+  } catch (error) {
+    console.error("Error en resetPassword:", error);
+    res.status(500).json({ error: "Error al resetear la contraseña" });
+  }
+};

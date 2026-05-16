@@ -15,6 +15,9 @@ model Profile {
   bio        String?
   wallet     Float   @default(0)
 
+  resetToken        String?   @map("reset_token")
+  resetTokenExpiry  DateTime? @map("reset_token_expiry")
+
   updatedAt  DateTime @updatedAt @map("updated_at")
   createdAt  DateTime @default(now()) @map("created_at")
 

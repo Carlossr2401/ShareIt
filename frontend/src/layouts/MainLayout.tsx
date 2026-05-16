@@ -60,6 +60,11 @@ export default function MainLayout() {
 
   const adminItems = [
     {
+      text: t("nav.masterCalendar") || "Master Calendar",
+      icon: <CalendarMonth />,
+      path: "/admin/master-calendar",
+    },
+    {
       text: t("nav.manageResources") || "Platform Resources",
       icon: <AdminPanelSettings />,
       path: "/admin/resources",
@@ -137,16 +142,16 @@ export default function MainLayout() {
 
         {/* Language Switcher */}
         <Box sx={{ px: 2, py: 1.5, display: "flex", justifyContent: "center", gap: 1 }}>
-          <IconButton 
-            size="small" 
-            onClick={() => setLang("en")} 
+          <IconButton
+            size="small"
+            onClick={() => setLang("en")}
             sx={{ opacity: lang === "en" ? 1 : 0.4, border: lang === "en" ? "1px solid rgba(124,77,255,0.3)" : "none" }}
           >
             <Typography variant="body2">🇬🇧</Typography>
           </IconButton>
-          <IconButton 
-            size="small" 
-            onClick={() => setLang("es")} 
+          <IconButton
+            size="small"
+            onClick={() => setLang("es")}
             sx={{ opacity: lang === "es" ? 1 : 0.4, border: lang === "es" ? "1px solid rgba(124,77,255,0.3)" : "none" }}
           >
             <Typography variant="body2">🇪🇸</Typography>
@@ -310,9 +315,9 @@ export default function MainLayout() {
               {t("nav.appTitle") || "ShareIt Platform"}
             </Typography>
             <Tooltip title="Platform Settings">
-                <IconButton size="small" sx={{ color: "grey.600" }}>
-                    <Settings fontSize="small" />
-                </IconButton>
+              <IconButton size="small" sx={{ color: "grey.600" }}>
+                <Settings fontSize="small" />
+              </IconButton>
             </Tooltip>
           </Toolbar>
         </AppBar>

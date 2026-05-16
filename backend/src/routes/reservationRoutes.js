@@ -6,7 +6,7 @@ import {
   getAllReservations,
   checkInReservation,
 } from "../controllers/reservationController.js";
-import { requireAuth } from "../middlewares/authMiddleware.js";
+import { requireAuth, requireAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -87,24 +87,6 @@ router.post("/", createReservation);
 
 /**
  * @swagger
- * /reservations:
- *   get:
- *     summary: Obtiene todas las reservas (para admin)
- *     tags: [Reservations]
- *     responses:
- *       200:
- *         description: Lista de todas las reservas
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Reservation'
- */
-router.get("/", getAllReservations);
-
-/**
- * @swagger
  * /reservations/me:
  *   get:
  *     summary: Obtiene las reservas del usuario autenticado
@@ -120,6 +102,26 @@ router.get("/", getAllReservations);
  *                 $ref: '#/components/schemas/Reservation'
  */
 router.get("/me", getUserReservations);
+
+/**
+ * @swagger
+ * /reservations:
+ *   get:
+ *     summary: Obtiene todas las reservas (solo para admin)
+ *     tags: [Reservations]
+ *     responses:
+ *       200:
+ *         description: Lista de todas las reservas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *       403:
+ *         description: Acceso denegado - se requieren permisos de administrador
+ */
+router.get("/", requireAdmin, getAllReservations);
 
 /**
  * @swagger

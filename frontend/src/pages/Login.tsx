@@ -184,10 +184,15 @@ export default function Login() {
 
           <Box sx={{ textAlign: "right", mb: 3 }}>
             <Link
-              href="#"
+              component="button"
+              type="button"
               underline="hover"
               variant="body2"
               sx={{ color: "primary.light" }}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/forgot-password");
+              }}
             >
               {t("login.forgot")}
             </Link>
