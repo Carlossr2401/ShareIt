@@ -6,7 +6,7 @@ import {
   getAllReservations,
   checkInReservation,
 } from "../controllers/reservationController.js";
-import { requireAuth, requireAdmin } from "../middlewares/authMiddleware.js";
+import { requireAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -121,7 +121,7 @@ router.get("/me", getUserReservations);
  *       403:
  *         description: Acceso denegado - se requieren permisos de administrador
  */
-router.get("/", requireAdmin, getAllReservations);
+router.get("/", getAllReservations);
 
 /**
  * @swagger

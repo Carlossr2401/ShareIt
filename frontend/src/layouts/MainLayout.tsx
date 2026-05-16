@@ -26,6 +26,7 @@ import {
   Inventory2,
   Settings,
   People,
+  CalendarMonth,
 } from "@mui/icons-material";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
