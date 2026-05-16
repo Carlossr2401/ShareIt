@@ -1,5 +1,6 @@
 import express from "express";
-import { signup, login, logout, getMe, topUpWallet, requestPasswordReset, resetPassword } from "../controllers/authController.js";
+import multer from "multer";
+import { signup, login, logout, updateProfile, getMe, topUpWallet, requestPasswordReset, resetPassword } from "../controllers/authController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();

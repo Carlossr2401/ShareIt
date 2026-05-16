@@ -16,6 +16,7 @@ import ResourceReservations from "./pages/ResourceReservations";
 import CheckIn from "./pages/CheckIn";
 import AdminUsers from "./pages/AdminUsers";
 import AdminUserDetail from "./pages/AdminUserDetail";
+import EditProfile from "./pages/EditProfile";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Comprueba si hay una bandera de sesión en localStorage.
