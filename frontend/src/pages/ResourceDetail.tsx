@@ -13,6 +13,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
+import FavoriteButton from "../context/FavoriteButton";
 import type { Prisma } from "../../../backend/node_modules/.prisma/client";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 import dayjs from "dayjs";
@@ -40,7 +41,7 @@ export default function ResourceDetail() {
   const { t } = useI18n();
   const { role } = useUser(); // Getting current user info for wallet balance simulation if needed
 
-  const [resource, setResource] = useState<ResourceWithRelations | null>(null);
+  const [resource, setResource] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   
   // Form fields
@@ -60,7 +61,9 @@ export default function ResourceDetail() {
   useEffect(() => {
     const fetchResource = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/resources/${id}`);
+        const res = await fetch(`http://localhost:3000/resources/${id}`, {
+          credentials: "include"
+        });
         if (res.ok) {
           const data = await res.json();
           setResource(data);
@@ -267,7 +270,10 @@ export default function ResourceDetail() {
             <CardContent sx={{ p: 4 }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 3 }}>
                 <Box>
-                    <Typography variant="h3" fontWeight={900} sx={{ letterSpacing: -1, mb: 0.5 }}>{resource.name}</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Typography variant="h3" fontWeight={900} sx={{ letterSpacing: -1, mb: 0.5 }}>{resource.name}</Typography>
+                        <FavoriteButton resourceId={resource.resourceId} initialIsFavorite={resource.isFavorite} />
+                    </Box>
                     <Typography variant="h6" color="grey.500" fontWeight={500}>{resource.location}</Typography>
                 </Box>
                 <Box sx={{ textAlign: "right" }}>
@@ -723,4 +729,3 @@ export default function ResourceDetail() {
     </Box>
   );
 }
-

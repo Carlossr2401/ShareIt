@@ -8,7 +8,8 @@ import {
   addAvailability,
   removeAvailability,
   getMyResources,
-  upload,
+  getMyFavorites,
+  toggleFavorite,
   uploadImages
 } from "../controllers/resourceController.js";
 import { requireAuth } from "../middlewares/authMiddleware.js";
@@ -105,9 +106,77 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Resource'
  */
-router.get("/", getResources);
+router.get("/", requireAuth, getResources);
 
+/**
+ * @swagger
+ * /resources/me:
+ *   get:
+ *     summary: Obtiene los recursos subidos por el usuario actual
+ *     tags: [Resources]
+ *     responses:
+ *       200:
+ *         description: Lista de recursos del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Resource'
+ *       401:
+ *         description: No autorizado
+ */
 router.get("/me", requireAuth, getMyResources);
+
+/**
+ * @swagger
+ * /resources/favorites/me:
+ *   get:
+ *     summary: Obtiene los recursos favoritos del usuario autenticado
+ *     tags: [Resources]
+ *     responses:
+ *       200:
+ *         description: Lista de recursos favoritos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Resource'
+ *       401:
+ *         description: No autorizado
+ */
+router.get("/favorites/me", requireAuth, getMyFavorites);
+
+/**
+ * @swagger
+ * /resources/{id}/favorite:
+ *   post:
+ *     summary: Alterna un recurso como favorito para el usuario autenticado
+ *     tags: [Resources]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del recurso
+ *     responses:
+ *       200:
+ *         description: Estado de favorito alternado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isFavorite:
+ *                   type: boolean
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Recurso no encontrado
+ */
+router.post("/:id/favorite", requireAuth, toggleFavorite);
 
 /**
  * @swagger
@@ -127,7 +196,7 @@ router.get("/me", requireAuth, getMyResources);
  *       404:
  *         description: Recurso no encontrado
  */
-router.get("/:id", getResourceById);
+router.get("/:id", requireAuth, getResourceById);
 
 /**
  * @swagger

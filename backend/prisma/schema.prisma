@@ -15,15 +15,14 @@ model Profile {
   bio        String?
   wallet     Float   @default(0)
 
-  resetToken        String?   @map("reset_token")
-  resetTokenExpiry  DateTime? @map("reset_token_expiry")
-
   updatedAt  DateTime @updatedAt @map("updated_at")
   createdAt  DateTime @default(now()) @map("created_at")
 
   role       Role     @default(USER)
 
   reservations Reservation[]
+  penalties    Penalty[]
+  favorites    Favorite[]
   penalties    Penalty[]
 
   @@map("profiles")
@@ -49,6 +48,7 @@ model Resource {
 
   availabilities Availability[]
   reservations   Reservation[]
+  favorites      Favorite[]
 
   @@map("resources")
 }
@@ -74,31 +74,10 @@ model Reservation {
   endTime       DateTime @db.Time @map("end_time")
   
   paymentMethod String   @default("WALLET") @map("payment_method")
-  total_amount   Float    @default(0) @map("total_amount")
-  status        String   @default("PENDING") // PENDING, CHECKED_IN, COMPLETED, CANCELLED
-
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+  total_price   Float    @default(0) @map("total_amount")
 
   resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
   user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
-}
-
-enum Role {
-  USER
-  ADMIN
-}
-
-model Penalty {
-  penaltyId   String   @id @default(uuid()) @db.Uuid @map("penalty_id")
-  userId      String   @db.Uuid @map("user_id")
-  reason      String
-  points      Int      @default(1)
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("penalties")
 }

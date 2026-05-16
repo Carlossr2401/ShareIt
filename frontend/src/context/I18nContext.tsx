@@ -15,6 +15,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.resources": "Resources",
     "nav.myReservations": "My Reservations",
     "nav.wallet": "Wallet",
+    "nav.favorites": "Favorites",
     "nav.admin": "Admin",
     "nav.manageResources": "Manage Resources",
     "nav.allReservations": "All Reservations",
@@ -339,6 +340,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "role.user": "User",
     "role.switchTo": "Switch to",
 
+    // Favorites
+    "favorites.title": "My Favorites",
+    "favorites.noFavorites": "You haven't added any favorites yet.",
+
     // Rules
     "rules.noFood": "No food or drinks",
     "rules.noSmoking": "No smoking",
@@ -364,6 +369,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.resources": "Recursos",
     "nav.myReservations": "Mis Reservas",
     "nav.wallet": "Monedero",
+    "nav.favorites": "Favoritos",
     "nav.admin": "Admin",
     "nav.manageResources": "Gestionar Recursos",
     "nav.allReservations": "Todas las Reservas",
@@ -687,25 +693,6 @@ const translations: Record<Lang, Record<string, string>> = {
     "role.admin": "Admin",
     "role.user": "Usuario",
     "role.switchTo": "Cambiar a",
-
-    // Rules
-    "rules.noFood": "Prohibido comida o bebida",
-    "rules.noSmoking": "Prohibido fumar",
-    "rules.returnClean": "Devolver limpio",
-    "rules.handleCare": "Tratar con cuidado",
-    "rules.quietArea": "Zona de silencio",
-    "rules.max4": "Máximo 4 personas",
-    "rules.priorReservation": "Reserva previa obligatoria",
-
-    // Status
-    "status.pending": "PENDIENTE",
-    "status.confirmed": "CONFIRMADA",
-    "status.checked_in": "EN CURSO",
-    "status.finished": "FINALIZADA",
-    "status.cancelled": "CANCELADA",
-    "status.active": "ACTIVA",
-    "status.past": "PASADA",
-    "status.upcoming": "PRÓXIMA",
   },
 };
 

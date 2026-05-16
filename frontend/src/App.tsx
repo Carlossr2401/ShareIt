@@ -17,6 +17,7 @@ import CheckIn from "./pages/CheckIn";
 import AdminUsers from "./pages/AdminUsers";
 import AdminUserDetail from "./pages/AdminUserDetail";
 import EditProfile from "./pages/EditProfile";
+import FavoritesPage from "./context/FavoritesPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Comprueba si hay una bandera de sesión en localStorage.
@@ -39,7 +40,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* Main app (with sidebar layout) */}
+      {/* App with Sidebar Layout (Totalmente Protegido) */}
       <Route
         element={
           <ProtectedRoute>
@@ -52,15 +53,12 @@ export default function App() {
         <Route path="/resources" element={<Resources />} />
         <Route path="/resources/:id" element={<ResourceDetail />} />
         <Route path="/reservations" element={<MyReservations />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/my-listings" element={<AdminResources />} />
         <Route path="/admin/resources" element={<AdminResources />} />
         <Route path="/admin/master-calendar" element={<AdminMasterCalendar />} />
         <Route path="/admin/reservations" element={<AdminReservations />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/users/:id" element={<AdminUserDetail />} />
-        <Route path="/resources/:id/reservations" element={<ResourceReservations />} />
-        <Route path="/checkin/:id" element={<CheckIn />} />
 
       </Route>
     </Routes>

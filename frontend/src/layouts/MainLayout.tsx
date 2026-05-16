@@ -27,6 +27,7 @@ import {
   Settings,
   People,
   CalendarMonth,
+  Favorite,
 } from "@mui/icons-material";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
@@ -52,6 +53,7 @@ export default function MainLayout() {
       path: "/reservations",
     },
     { text: t("nav.wallet") || "Wallet", icon: <AccountBalanceWallet />, path: "/wallet" },
+    { text: t("nav.favorites") || "Favorites", icon: <Favorite />, path: "/favorites" },
   ];
 
   const listingItems = [
@@ -118,53 +120,53 @@ export default function MainLayout() {
         <Divider sx={{ borderColor: "rgba(124, 77, 255, 0.12)" }} />
 
         {/* User Profile */}
-          <Box 
-            onClick={() => navigate("/profile")}
-            sx={{ 
-              p: 2, 
-              mx: 1,
-              mt: 1,
-              my: 1,
-              display: "flex", 
-              alignItems: "center", 
-              gap: 1.5, 
-              borderRadius:2,
-              cursor: 'pointer',
-              transition: '0.2s',
-              bgcolor: isProfileActive ? "rgba(124, 77, 255, 0.12)" : "transparent",
-              '&:hover': { bgcolor: "rgba(255, 255, 255, 0.05)" }
+        <Box
+          onClick={() => navigate("/profile")}
+          sx={{
+            p: 2,
+            mx: 1,
+            mt: 1,
+            my: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            borderRadius: 2,
+            cursor: 'pointer',
+            transition: '0.2s',
+            bgcolor: isProfileActive ? "rgba(124, 77, 255, 0.12)" : "transparent",
+            '&:hover': { bgcolor: "rgba(255, 255, 255, 0.05)" }
+          }}
+        >
+          <Avatar
+            src={avatarUrl}
+            sx={{
+              bgcolor: role === "admin" ? "secondary.main" : "primary.main",
+              width: 40,
+              height: 40,
+              boxShadow: isProfileActive ? "0 0 15px rgba(124,77,255,0.5)" : "0 0 10px rgba(124,77,255,0.3)",
+              border: isProfileActive ? "2px solid #7C4DFF" : "none"
             }}
           >
-            <Avatar
-              src={avatarUrl}
-              sx={{
-                bgcolor: role === "admin" ? "secondary.main" : "primary.main",
-                width: 40,
-                height: 40,
-                boxShadow: isProfileActive ? "0 0 15px rgba(124,77,255,0.5)" : "0 0 10px rgba(124,77,255,0.3)",
-                border: isProfileActive ? "2px solid #7C4DFF" : "none"
-              }}
+            {userName ? userName.charAt(0) : <Person />}
+          </Avatar>
+          <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              noWrap
+              sx={{ color: isProfileActive ? "primary.light" : "white" }}
             >
-              {userName ? userName.charAt(0) : <Person />}
-            </Avatar>
-            <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-              <Typography 
-                variant="body2" 
-                fontWeight={700} 
-                noWrap 
-                sx={{ color: isProfileActive ? "primary.light" : "white" }}
-              >
-                {userName}
-              </Typography>
-              <Chip
-                label={t(`role.${role}`) || role}
-                size="small"
-                color={role === "admin" ? "secondary" : "primary"}
-                sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" }}
-              />
-            </Box>
+              {userName}
+            </Typography>
+            <Chip
+              label={t(`role.${role}`) || role}
+              size="small"
+              color={role === "admin" ? "secondary" : "primary"}
+              sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" }}
+            />
           </Box>
-          
+        </Box>
+
         <Divider sx={{ borderColor: "rgba(124, 77, 255, 0.12)" }} />
 
         {/* Language Switcher */}
@@ -351,7 +353,8 @@ export default function MainLayout() {
         <Box component="main" sx={{ flexGrow: 1, p: 4, overflow: "auto", bgcolor: "#0A0E1A" }}>
           <Outlet />
         </Box>
-      </Box> 
+      </Box>
     </Box>
   );
 }
+
