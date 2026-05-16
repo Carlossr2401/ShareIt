@@ -59,6 +59,10 @@ export default function App() {
         <Route path="/admin/resources" element={<AdminResources />} />
         <Route path="/admin/master-calendar" element={<AdminMasterCalendar />} />
         <Route path="/admin/reservations" element={<AdminReservations />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/users/:id" element={<AdminUserDetail />} />
+        <Route path="/resources/:id/reservations" element={<ResourceReservations />} />
+        <Route path="/checkin/:id" element={<CheckIn />} />
 
       </Route>
     </Routes>

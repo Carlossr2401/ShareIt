@@ -7,77 +7,95 @@ datasource db {
 }
 
 model Profile {
-  id         String  @id @db.Uuid
-  email      String  @unique // Para consultas rápidas desde el backend
-  username   String  @unique
-  fullName   String? @map("full_name")
-  avatarUrl  String? @map("avatar_url")
-  bio        String?
-  wallet     Float   @default(0)
-
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  role       Role     @default(USER)
-
-  reservations Reservation[]
-  penalties    Penalty[]
+  id           String        @id @db.Uuid
+  email        String        @unique
+  username     String        @unique
+  fullName     String?       @map("full_name")
+  avatarUrl    String?       @map("avatar_url")
+  bio          String?
+  wallet       Float         @default(0)
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  role         Role          @default(USER)
   favorites    Favorite[]
   penalties    Penalty[]
+  reservations Reservation[]
 
   @@map("profiles")
 }
 
-
 model Resource {
-  resourceId  String   @id @default(uuid()) @db.Uuid @map("resource_id")
-  name        String
-  description String?
-  location    String?
-  photoUrls   String[] @default([]) @map("photo_urls")
-  rules       String[] @default([])
-  deposit     Float?
-  price       Float    @default(0)
-  category    String?
-  ownerId     String?  @db.Uuid @map("owner_id")
-
-  isArchived  Boolean @default(false) @map("is_archived")
-
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-
+  resourceId     String         @id @default(uuid()) @map("resource_id") @db.Uuid
+  name           String
+  description    String?
+  location       String?
+  photoUrls      String[]       @map("photo_urls")
+  rules          String[]
+  deposit        Float?
+  price          Float          @default(0)
+  category       String?
+  ownerId        String?        @map("owner_id") @db.Uuid
+  isArchived     Boolean        @default(false) @map("is_archived")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
   availabilities Availability[]
-  reservations   Reservation[]
   favorites      Favorite[]
+  reservations   Reservation[]
 
   @@map("resources")
 }
 
 model Availability {
-  availabilityId  String   @id @default(uuid()) @db.Uuid @map("availability_id")
-  resourceId      String   @db.Uuid @map("resource_id")
-  dayOfWeek       Int      @map("day_of_week") // 0 = Sunday, 1 = Monday, etc.
-  startTime       DateTime @db.Time @map("start_time")
-  endTime         DateTime @db.Time @map("end_time")
-
-  resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
+  availabilityId String   @id @default(uuid()) @map("availability_id") @db.Uuid
+  resourceId     String   @map("resource_id") @db.Uuid
+  dayOfWeek      Int      @map("day_of_week")
+  startTime      DateTime @map("start_time") @db.Time(6)
+  endTime        DateTime @map("end_time") @db.Time(6)
+  resource       Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
 
   @@map("availabilities")
 }
 
 model Reservation {
-  reservationId String   @id @default(uuid()) @db.Uuid @map("reservation_id")
-  resourceId    String   @db.Uuid @map("resource_id")
-  userId        String   @db.Uuid @map("user_id")
+  reservationId String   @id @default(uuid()) @map("reservation_id") @db.Uuid
+  resourceId    String   @map("resource_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
   date          DateTime @db.Date
-  startTime     DateTime @db.Time @map("start_time")
-  endTime       DateTime @db.Time @map("end_time")
-  
-  paymentMethod String   @default("WALLET") @map("payment_method")
+  startTime     DateTime @map("start_time") @db.Time(6)
+  endTime       DateTime @map("end_time") @db.Time(6)
   total_price   Float    @default(0) @map("total_amount")
-
-  resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
-  user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now()) @map("created_at")
+  paymentMethod String   @default("WALLET") @map("payment_method")
+  status        String   @default("PENDING")
+  updatedAt     DateTime @updatedAt @default(now()) @map("updated_at")
+  resource      Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
+  user          Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
+}
+
+model Favorite {
+  userId     String   @db.Uuid
+  resourceId String   @map("resource_id") @db.Uuid
+  resource   Resource @relation(fields: [resourceId], references: [resourceId])
+  profiles   Profile  @relation(fields: [userId], references: [id])
+
+  @@id([userId, resourceId])
+  @@map("favorites")
+}
+
+model Penalty {
+  penaltyId String   @id @default(uuid()) @map("penalty_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  reason    String
+  points    Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("penalties")
+}
+
+enum Role {
+  USER
+  ADMIN
 }
