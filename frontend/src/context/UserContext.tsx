@@ -6,6 +6,8 @@ interface UserContextType {
   role: UserRole;
   setRole: (role: UserRole) => void;
   userName: string;
+  fullName: string;
+  bio: string;
   avatarUrl?: string;
   loading: boolean;
   refreshUser: () => Promise<void>;
@@ -18,6 +20,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [userName, setUserName] = useState<string>("Cargando...");
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const [fullName, setFullName] = useState<string>("");
+  const [bio, setBio] = useState<string>("");
 
   const fetchUser = async () => {
     try {
@@ -29,11 +33,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         
         // El backend devuelve el objeto Profile directamente desde Prisma
-        // Estructura: { id, email, username, fullName, avatarUrl, wallet, ... }
+        // Estructura: { id, email, username, fullName, bio, avatarUrl, wallet, ... }
         
         const name = data.fullName || data.username || data.email?.split('@')[0] || "Usuario";
-        setUserName(name);
-        
+        setUserName(data.username || "");
+        setFullName(data.fullName || "");
+        setBio(data.bio || "");
+
         if (data.avatarUrl) {
           setAvatarUrl(data.avatarUrl);
         }
@@ -60,7 +66,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ role, setRole, userName, avatarUrl, loading, refreshUser: fetchUser }}>
+    <UserContext.Provider value={{ role, setRole, userName, fullName, bio, avatarUrl, loading, refreshUser: fetchUser }}>
       {children}
     </UserContext.Provider>
   );

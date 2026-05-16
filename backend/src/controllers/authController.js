@@ -184,6 +184,66 @@ export const getMe = async (req, res) => {
   }
 };
 
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, username, bio } = req.body;
+    const userId = req.user.id;
+    let avatar_url = req.body.avatar_url;
+
+    if (username) {
+      const existingUser = await prisma.profile.findFirst({
+        where: {
+          username: username,
+          NOT: { id: userId },
+        },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ 
+          error: "El nombre de usuario ya está en uso. Prueba con otro." 
+        });
+      }
+    }
+
+    if (req.file) {
+      const file = req.file;
+      const fileExt = file.originalname.split('.').pop();
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+      avatar_url = publicUrl;
+    }
+    
+    const updatedProfile = await prisma.profile.update({
+      where: { id: userId },
+      data: {
+        fullName: name,
+        username,
+        bio,
+        avatarUrl: avatar_url
+      }
+    });
+
+    res.json(updatedProfile);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: "El nombre de usuario o email ya existe." });
+    }
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const topUpWallet = async (req, res) => {
   try {
     const { amount } = req.body;

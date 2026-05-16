@@ -46,6 +46,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
+        <Route path="/profile" element={<EditProfile />} />
         <Route path="/" element={<Dashboard />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/resources/:id" element={<ResourceDetail />} />
