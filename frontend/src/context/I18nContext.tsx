@@ -20,9 +20,28 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.manageResources": "Manage Resources",
     "nav.allReservations": "All Reservations",
     "nav.myListings": "My Listings",
+    "nav.masterCalendar": "Master Calendar",
     "nav.users": "Users",
     "nav.logout": "Log Out",
     "nav.appTitle": "Space & Equipment Reservation",
+
+    // Admin Master Calendar
+    "admin.masterCalendar.title": "Master Calendar",
+    "admin.masterCalendar.subtitle": "View all reservations across all resources",
+    "admin.masterCalendar.searchResources": "Search resources or users",
+    "admin.masterCalendar.status": "Status",
+    "admin.masterCalendar.resource": "Resource",
+    "admin.masterCalendar.allStatuses": "All Statuses",
+    "admin.masterCalendar.allResources": "All Resources",
+    "admin.masterCalendar.loading": "Loading...",
+    "admin.masterCalendar.reservationDetails": "Reservation Details",
+    "admin.masterCalendar.user": "User",
+    "admin.masterCalendar.date": "Date",
+    "admin.masterCalendar.time": "Time",
+    "admin.masterCalendar.totalAmount": "Total Amount",
+    "admin.masterCalendar.userEmail": "User Email",
+    "admin.masterCalendar.close": "Close",
+    "reservations.checkedIn": "Checked In",
 
     // Login
     "login.title": "Sign in to manage your reservations",
@@ -362,6 +381,20 @@ const translations: Record<Lang, Record<string, string>> = {
     "status.active": "ACTIVE",
     "status.past": "PAST",
     "status.upcoming": "UPCOMING",
+
+    // Resource Reservations page
+    "resRes.backToListings": "Back to My Listings",
+    "resRes.titlePrefix": "Reservations for",
+    "resRes.subtitle": "View all bookings and occupants for this resource.",
+    "resRes.totalBookings": "total bookings",
+    "resRes.noReservations": "No reservations found yet for this resource.",
+    "resRes.occupant": "Occupant",
+    "resRes.slot": "Slot",
+    "resRes.amount": "Amount",
+    "resRes.actions": "Actions",
+    "resRes.unknownUser": "Unknown User",
+    "resRes.reviewTenant": "Review Tenant",
+    "resRes.notFound": "Resource not found.",
   },
   es: {
     // Sidebar
@@ -374,9 +407,28 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.manageResources": "Gestionar Recursos",
     "nav.allReservations": "Todas las Reservas",
     "nav.myListings": "Mis Anuncios",
+    "nav.masterCalendar": "Calendario General",
     "nav.users": "Usuarios",
     "nav.logout": "Cerrar Sesión",
     "nav.appTitle": "Reserva de Espacios y Equipos",
+
+    // Admin Master Calendar
+    "admin.masterCalendar.title": "Calendario General",
+    "admin.masterCalendar.subtitle": "Ver todas las reservas de todos los recursos",
+    "admin.masterCalendar.searchResources": "Buscar recursos o usuarios",
+    "admin.masterCalendar.status": "Estado",
+    "admin.masterCalendar.resource": "Recurso",
+    "admin.masterCalendar.allStatuses": "Todos los Estados",
+    "admin.masterCalendar.allResources": "Todos los Recursos",
+    "admin.masterCalendar.loading": "Cargando...",
+    "admin.masterCalendar.reservationDetails": "Detalles de la Reserva",
+    "admin.masterCalendar.user": "Usuario",
+    "admin.masterCalendar.date": "Fecha",
+    "admin.masterCalendar.time": "Hora",
+    "admin.masterCalendar.totalAmount": "Importe Total",
+    "admin.masterCalendar.userEmail": "Email del Usuario",
+    "admin.masterCalendar.close": "Cerrar",
+    "reservations.checkedIn": "En curso",
 
     // Login
     "login.title": "Inicia sesión para gestionar tus reservas",
@@ -693,6 +745,34 @@ const translations: Record<Lang, Record<string, string>> = {
     "role.admin": "Admin",
     "role.user": "Usuario",
     "role.switchTo": "Cambiar a",
+
+    // Favorites
+    "favorites.title": "Mis Favoritos",
+    "favorites.noFavorites": "Aún no has añadido ningún favorito.",
+
+    // Status labels
+    "status.pending": "PENDIENTE",
+    "status.confirmed": "CONFIRMADA",
+    "status.checked_in": "EN CURSO",
+    "status.finished": "FINALIZADA",
+    "status.cancelled": "CANCELADA",
+    "status.active": "ACTIVA",
+    "status.past": "PASADA",
+    "status.upcoming": "PRÓXIMA",
+
+    // Resource Reservations page
+    "resRes.backToListings": "Volver a Mis Anuncios",
+    "resRes.titlePrefix": "Reservas de",
+    "resRes.subtitle": "Consulta todas las reservas y ocupantes de este recurso.",
+    "resRes.totalBookings": "reservas en total",
+    "resRes.noReservations": "Aún no hay reservas para este recurso.",
+    "resRes.occupant": "Ocupante",
+    "resRes.slot": "Franja Horaria",
+    "resRes.amount": "Importe",
+    "resRes.actions": "Acciones",
+    "resRes.unknownUser": "Usuario desconocido",
+    "resRes.reviewTenant": "Valorar ocupante",
+    "resRes.notFound": "Recurso no encontrado.",
   },
 };
 

@@ -113,7 +113,7 @@ export default function AdminMasterCalendar() {
     while (current.isBefore(endDate) || current.isSame(endDate)) {
       const dateStr = current.format("YYYY-MM-DD");
       const dayReservations = reservations.filter((r) => {
-        const rDate = new Date(r.date).toISOString().split("T")[0];
+        const rDate = typeof r.date === "string" ? r.date.split("T")[0] : dayjs(r.date).format("YYYY-MM-DD");
         if (rDate !== dateStr) return false;
 
         const matchSearch =
@@ -253,14 +253,14 @@ export default function AdminMasterCalendar() {
                       sx={{
                         minHeight: 120,
                         border: "1px solid",
-                        borderColor: day.isCurrentMonth ? "divider" : "grey.200",
+                        borderColor: day.isCurrentMonth ? "divider" : "rgba(255,255,255,0.05)",
                         borderRadius: 1,
                         p: 1,
                         backgroundColor: day.isCurrentMonth
                           ? day.date.isSame(dayjs(), "day")
                             ? "rgba(124,77,255,0.05)"
                             : "transparent"
-                          : "grey.50",
+                          : "rgba(255,255,255,0.02)",
                         cursor: "pointer",
                         overflow: "hidden",
                         transition: "all 0.2s",
@@ -268,7 +268,7 @@ export default function AdminMasterCalendar() {
                           boxShadow: 1,
                           backgroundColor: day.isCurrentMonth
                             ? "rgba(124,77,255,0.1)"
-                            : "grey.100",
+                            : "rgba(255,255,255,0.04)",
                         },
                       }}
                     >

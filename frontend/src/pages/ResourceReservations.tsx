@@ -38,7 +38,7 @@ export default function ResourceReservations() {
   }, [id]);
 
   if (loading) return <Box sx={{ p: 4, textAlign: "center" }}><CircularProgress /></Box>;
-  if (!resource) return <Box sx={{ p: 4 }}><Typography color="error">Resource not found.</Typography></Box>;
+  if (!resource) return <Box sx={{ p: 4 }}><Typography color="error">{t("resRes.notFound") || "Recurso no encontrado."}</Typography></Box>;
 
   const reservations = resource.reservations || [];
 
@@ -49,16 +49,18 @@ export default function ResourceReservations() {
         onClick={() => navigate("/my-listings")} 
         sx={{ mb: 3, color: "grey.400" }}
       >
-        {t("detail.back") || "Back to Listings"}
+        {t("resRes.backToListings") || "Volver a Mis Anuncios"}
       </Button>
 
       <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <Box>
-          <Typography variant="h4" fontWeight={900} sx={{ mb: 1 }}>Reservations for <span style={{ color: "#7C4DFF" }}>{resource.name}</span></Typography>
-          <Typography variant="body1" color="grey.500">View all bookings and occupants for this resource.</Typography>
+          <Typography variant="h4" fontWeight={900} sx={{ mb: 1 }}>
+            {t("resRes.titlePrefix") || "Reservas de"}{" "}<span style={{ color: "#7C4DFF" }}>{resource.name}</span>
+          </Typography>
+          <Typography variant="body1" color="grey.500">{t("resRes.subtitle") || "Consulta todas las reservas y ocupantes de este recurso."}</Typography>
         </Box>
         <Chip 
-          label={`${reservations.length} total bookings`} 
+          label={`${reservations.length} ${t("resRes.totalBookings") || "reservas en total"}`} 
           variant="outlined" 
           sx={{ borderColor: "rgba(124,77,255,0.3)", color: "#7C4DFF", fontWeight: 700, p: 1.5 }} 
         />
@@ -67,7 +69,7 @@ export default function ResourceReservations() {
       {reservations.length === 0 ? (
         <Card sx={{ borderRadius: 6, py: 10, textAlign: "center", border: "2px dashed rgba(255,255,255,0.08)", bgcolor: "transparent" }}>
           <CardContent>
-            <Typography variant="h6" color="grey.600">No reservations found yet for this resource.</Typography>
+            <Typography variant="h6" color="grey.600">{t("resRes.noReservations") || "Aún no hay reservas para este recurso."}</Typography>
           </CardContent>
         </Card>
       ) : (
@@ -76,12 +78,12 @@ export default function ResourceReservations() {
             <Table>
               <TableHead sx={{ bgcolor: "rgba(255,255,255,0.02)" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Occupant</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Slot</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Amount</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Payment</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "grey.400", align: "right" }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>{t("resRes.occupant") || "Ocupante"}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>{t("adminBook.date") || "Fecha"}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>{t("resRes.slot") || "Franja"}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>{t("resRes.amount") || "Importe"}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>{t("reservations.payment") || "Pago"}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>{t("resRes.actions") || "Acciones"}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -97,13 +99,13 @@ export default function ResourceReservations() {
                           <Box sx={{ width: 32, height: 32, borderRadius: "50%", bgcolor: "rgba(124,77,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "primary.main" }}>
                             <Person fontSize="small" />
                           </Box>
-                          <Typography fontWeight={700}>{res.user?.fullName || "Unknown User"}</Typography>
+                          <Typography fontWeight={700}>{res.user?.fullName || t("resRes.unknownUser") || "Usuario desconocido"}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "grey.300" }}>
                           <CalendarMonth fontSize="small" sx={{ color: "primary.main" }} />
-                          <Typography fontWeight={600}>{dayjs(res.date).format("MMM D, YYYY")}</Typography>
+                          <Typography fontWeight={600}>{dayjs(res.date).format("DD/MM/YYYY")}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -117,7 +119,7 @@ export default function ResourceReservations() {
                       </TableCell>
                       <TableCell>
                         <Chip 
-                          label={res.paymentMethod || "WALLET"} 
+                          label={res.paymentMethod === "CARD" ? (t("detail.cardLabel") || "TARJETA") : (t("detail.walletLabel") || "CARTERA")} 
                           size="small" 
                           variant="outlined"
                           sx={{ 
@@ -131,7 +133,7 @@ export default function ResourceReservations() {
                       </TableCell>
                       <TableCell align="right">
                         {isPast && (
-                          <Tooltip title="Review Tenant">
+                          <Tooltip title={t("resRes.reviewTenant") || "Valorar ocupante"}>
                             <IconButton size="small" onClick={() => setReviewReservation(res)} sx={{ color: "#00E5FF" }}>
                               <RateReview fontSize="small" />
                             </IconButton>
@@ -156,9 +158,7 @@ export default function ResourceReservations() {
           targetId={reviewReservation.userId}
           role="OWNER"
           resourceName={resource.name}
-          onSuccess={() => {
-            // Can add a toast here
-          }}
+          onSuccess={() => {}}
         />
       )}
     </Box>
