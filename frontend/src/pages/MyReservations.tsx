@@ -4,14 +4,16 @@ import {
   TableCell, TableBody, TableContainer, Chip, IconButton, Tooltip, Button,
   Dialog, DialogTitle, DialogContent, DialogActions, Tabs, Tab
 } from "@mui/material";
-import { Delete, Refresh, EventNote, QrCode2 } from "@mui/icons-material";
+import { Delete, Refresh, EventNote, QrCode2, RateReview } from "@mui/icons-material";
 import { QRCodeSVG } from "qrcode.react";
 import { useI18n } from "../context/I18nContext";
+import ReviewModal from "../components/ReviewModal";
 
 export default function MyReservations() {
   const { t } = useI18n();
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedQrReservation, setSelectedQrReservation] = useState<any>(null);
+  const [reviewReservation, setReviewReservation] = useState<any>(null);
   const [tabValue, setTabValue] = useState(0);
 
   const getReservationDates = (r: any) => {
@@ -209,6 +211,13 @@ export default function MyReservations() {
                               <QrCode2 fontSize="small" />
                             </IconButton>
                           </Tooltip>
+                          {(derivedStatus === "PAST" || derivedStatus === "FINISHED" || derivedStatus === "COMPLETED") && (
+                            <Tooltip title="Review Reservation">
+                              <IconButton size="small" onClick={() => setReviewReservation(r)} sx={{ color: "#00E5FF" }}>
+                                <RateReview fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                           <Tooltip title="Cancel Booking">
                             <IconButton size="small" onClick={() => handleCancel(r.reservationId)} sx={{ color: "error.main" }}>
                               <Delete fontSize="small" />
@@ -252,6 +261,21 @@ export default function MyReservations() {
           <Button onClick={() => setSelectedQrReservation(null)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Review Modal */}
+      {reviewReservation && (
+        <ReviewModal
+          open={true}
+          onClose={() => setReviewReservation(null)}
+          reservationId={reviewReservation.reservationId}
+          targetId={reviewReservation.resource?.ownerId || "unknown"}
+          role="TENANT"
+          resourceName={reviewReservation.resource?.name || "Resource"}
+          onSuccess={() => {
+            fetchReservations();
+          }}
+        />
+      )}
     </Box>
   );
 }

@@ -4,10 +4,11 @@ import {
   TableCell, TableBody, TableContainer, Chip, Button, CircularProgress,
   Divider, IconButton, Tooltip
 } from "@mui/material";
-import { ArrowBack, CalendarMonth, Person, AccessTime, Payments } from "@mui/icons-material";
+import { ArrowBack, CalendarMonth, Person, AccessTime, Payments, RateReview } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
 import dayjs from "dayjs";
+import ReviewModal from "../components/ReviewModal";
 
 export default function ResourceReservations() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function ResourceReservations() {
   const { t } = useI18n();
   const [resource, setResource] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [reviewReservation, setReviewReservation] = useState<any>(null);
 
   useEffect(() => {
     const fetchResourceReservations = async () => {
@@ -79,6 +81,7 @@ export default function ResourceReservations() {
                   <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Slot</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Amount</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: "grey.400" }}>Payment</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "grey.400", align: "right" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -126,6 +129,15 @@ export default function ResourceReservations() {
                           }} 
                         />
                       </TableCell>
+                      <TableCell align="right">
+                        {isPast && (
+                          <Tooltip title="Review Tenant">
+                            <IconButton size="small" onClick={() => setReviewReservation(res)} sx={{ color: "#00E5FF" }}>
+                              <RateReview fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -133,6 +145,21 @@ export default function ResourceReservations() {
             </Table>
           </TableContainer>
         </Card>
+      )}
+
+      {/* Review Modal */}
+      {reviewReservation && (
+        <ReviewModal
+          open={true}
+          onClose={() => setReviewReservation(null)}
+          reservationId={reviewReservation.reservationId}
+          targetId={reviewReservation.userId}
+          role="OWNER"
+          resourceName={resource.name}
+          onSuccess={() => {
+            // Can add a toast here
+          }}
+        />
       )}
     </Box>
   );

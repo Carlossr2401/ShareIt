@@ -3,13 +3,13 @@ import {
   Box, Typography, Card, CardContent, Button, Chip,
   Divider, CircularProgress, Alert, Paper, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  RadioGroup, FormControlLabel, Radio, Stack, Backdrop, IconButton
+  RadioGroup, FormControlLabel, Radio, Stack, Backdrop, IconButton, Rating
 } from "@mui/material";
 import { 
   ArrowBack, MeetingRoom, Laptop, Tv, DirectionsCar, Brush, 
   CalendarMonth, AccessTime, CheckCircle, AccountBalanceWallet, 
   CreditCard, InfoOutlined, Payments, ChevronLeft, ChevronRight,
-  Fullscreen, Close
+  Fullscreen, Close, Star, Person
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
@@ -41,6 +41,7 @@ export default function ResourceDetail() {
   const { role } = useUser(); // Getting current user info for wallet balance simulation if needed
 
   const [resource, setResource] = useState<ResourceWithRelations | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Form fields
@@ -64,6 +65,18 @@ export default function ResourceDetail() {
         if (res.ok) {
           const data = await res.json();
           setResource(data);
+
+          if (data.ownerId) {
+            try {
+              const revRes = await fetch(`http://localhost:3000/reviews/target/${data.ownerId}`);
+              if (revRes.ok) {
+                const revData = await revRes.json();
+                setReviews(revData.filter((r: any) => r.role === "TENANT"));
+              }
+            } catch (err) {
+              console.error("Error fetching reviews", err);
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching resource:", error);
@@ -300,6 +313,43 @@ export default function ResourceDetail() {
                   </Box>
                 </Box>
               )}
+
+              {/* REVIEWS SECTION */}
+              <Divider sx={{ my: 4, opacity: 0.1 }} />
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" fontWeight={800} sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
+                    <Star color="primary" /> {t("detail.reviews") || "Owner Reviews"}
+                </Typography>
+                {reviews.length === 0 ? (
+                  <Typography variant="body2" color="grey.500">{t("detail.noReviews") || "No reviews yet."}</Typography>
+                ) : (
+                  <Stack spacing={3}>
+                    {reviews.map((r, i) => (
+                      <Box key={i} sx={{ p: 2, borderRadius: 3, bgcolor: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Box sx={{ width: 32, height: 32, borderRadius: "50%", bgcolor: "rgba(124,77,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                              {r.reviewer?.avatarUrl ? <img src={r.reviewer.avatarUrl} alt="Avatar" width="100%" height="100%" style={{ objectFit: "cover" }}/> : <Person fontSize="small" sx={{ color: "primary.main" }} />}
+                            </Box>
+                            <Typography fontWeight={700}>{r.reviewer?.fullName || r.reviewer?.username || "User"}</Typography>
+                          </Box>
+                          <Typography variant="caption" color="grey.500">{dayjs(r.createdAt).format("MMM D, YYYY")}</Typography>
+                        </Box>
+                        <Rating value={r.rating} readOnly size="small" sx={{ mb: 1 }} />
+                        {r.comment && <Typography variant="body2" color="grey.400">{r.comment}</Typography>}
+                        {r.imageUrls && r.imageUrls.length > 0 && (
+                          <Box sx={{ display: "flex", gap: 1, mt: 2, overflowX: "auto" }}>
+                            {r.imageUrls.map((url: string, idx: number) => (
+                              <img key={idx} src={url} alt={`Review photo ${idx}`} style={{ width: 80, height: 60, objectFit: "cover", borderRadius: 4 }} />
+                            ))}
+                          </Box>
+                        )}
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </Box>
+
             </CardContent>
           </Card>
         </Grid>
