@@ -80,7 +80,6 @@ export default function ResourceDetail() {
 
   const [resource, setResource] = useState<ResourceWithRelations | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
-  const [resource, setResource] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Form fields
